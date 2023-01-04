@@ -1,38 +1,121 @@
-.App {
-  text-align: center;
+
+.station-circle {
+	stroke: #7e786c;
+	fill: #e3ddd5;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+
+.track-polyline {
+    stroke-dashoffset: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.subway-group:focus {
+	outline: none;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.subway-group * {
+	transition: all 0.15s ease-in-out;
 }
 
-.App-link {
-  color: #61dafb;
+.subway-group:hover .track-polyline, 
+.subway-group:hover .track-background-polyline,
+.subway-group:focus .track-polyline, 
+.subway-group:focus .track-background-polyline {
+	stroke-width: 12;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.subway-group:hover .track-polyline,
+.subway-group:focus .track-polyline {
+	stroke-dasharray: 5 15;
+	animation: dash 2s linear infinite;
+}
+
+.label-group {
+	transition: filter 1s ease-out;
+}
+
+.subway-group:hover .label-group,
+.subway-group:focus .label-group {
+	filter: url(#label-group-hover);
+}
+
+.subway-group:hover .label-circle, 
+.subway-group:focus .label-circle {
+	filter: url(#label-circle-hover);
+}
+
+@keyframes dash {
+	from {
+    	stroke-dashoffset: 20;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+.station-circle {
+	stroke: #7e786c;
+	fill: #e3ddd5;
+}
+
+.station-end-circle {
+	fill: none;
+}
+
+.track-polyline,
+.track-background-polyline {
+    fill: none;
+    stroke-linecap: round;
+}
+
+
+.track-background-polyline {
+    stroke-opacity: 0%;
+    stroke: #beb9b3;
+}
+
+.cars-group {
+	filter: url(#subway-drop-shadow);
+}
+
+.car-rect {
+	fill: #e3ddd5;
+	stroke-width: 1;
+}
+
+.label-text,
+.points-first-text,
+.points-others-text {
+	text-anchor: middle;
+	alignment-baseline: central;
+	dominant-baseline: central;
+    user-select:none;
+}
+
+.label-text {
+	fill: #e3ddd5;
+	font: bold 26px "Arial Black",Arial,sans-serif;
+	text-anchor: middle;
+    text-shadow: 0 0 2.5px rgba(0,0,0,0.4);
+}
+
+
+.points-first-text {
+	fill: #000;
+	font: bold 18px "Arial Black",Arial,sans-serif;
+}
+
+.points-others-text {
+	fill: #000;
+	font: bold 18px "Arial Black",Arial,sans-serif;
+}
+
+.points-first-path {
+	fill: #cba61e;
+}
+
+.points-others-rect {
+	fill: #e3ddd5;
+	stroke: #ada694;
+    stroke-width: 2;
 }
