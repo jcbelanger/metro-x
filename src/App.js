@@ -91,8 +91,8 @@ function App() {
   const styles = {
     spacing: 50,
     station: {
-      radius: 10,
-      strokeWidth: 4
+      radius: 15,
+      strokeWidth: 5
     },
     track: {
       strokeWidth: 5
@@ -115,7 +115,7 @@ function App() {
     const edges = zip(subway.stations, subway.stations.slice(1));
     for (const edge of edges) {
       const key = normalizeEdge(edge).flat();
-      const forward = setNested(edgeLabels, key, prev => prev.add(subway.label), () => new Set([subway.label]));
+      setNested(edgeLabels, key, prev => prev.add(subway.label), () => new Set([subway.label]));
     }
   }
   
@@ -126,65 +126,66 @@ function App() {
 
   return (
     <svg version='1.1' baseProfile='full' width='100%' height='100%' viewBox='0 0 900 600' xmlns='http://www.w3.org/2000/svg'>
-        <g>
-          {subways.map(subway => {
-            const edges = zip(subway.stations, subway.stations.slice(1));
-            const points = Array.from(edges).flatMap(edge => {
-              const [[x1, y1], [x2, y2]] = edge.map(toSVG);
-              const [rise, run] = [y1 - y2, x1 - x2];
-              const [perpRise, perpRun] = rise === 0 || run === 0 ? [run, rise] : [-run, rise];
+      <g>
+        {subways.map(subway => {
+          const edges = zip(subway.stations, subway.stations.slice(1));
+          const points = Array.from(edges).flatMap(edge => {
+            const [[x1, y1], [x2, y2]] = edge.map(toSVG);
+            const [rise, run] = [y1 - y2, x1 - x2];
+            const [perpRise, perpRun] = rise === 0 || run === 0 ? [run, rise] : [-run, rise];
 
-              const dist = Math.sqrt(rise * rise + run * run);
+            const key = normalizeEdge(edge).flat();
+            const labels = getNested(edgeLabels, key);
+            const edgeIndex = Array.from(labels).sort().indexOf(subway.label);
 
-              const key = normalizeEdge(edge).flat();
-              const labels = getNested(edgeLabels, key);
-              const edgeIndex = Array.from(labels).sort().indexOf(subway.label);
-              const stationWidth = 2 * styles.station.radius + styles.station.strokeWidth - styles.track.strokeWidth;
-              const edgeWidth = stationWidth / labels.size;
+            const totalEdgesWidth = 2 * styles.station.radius - styles.track.strokeWidth;
+            const edgeWidth = totalEdgesWidth / labels.size;
+            const maxEdgeOffset = totalEdgesWidth / 2 - edgeWidth / 2;
+            const perpOffset = maxEdgeOffset - edgeIndex * edgeWidth;
 
-              const [xOffset, yOffset] = [perpRun, perpRise].map(r => {
-                const ratio = r / dist;
-                const indexOffset = stationWidth / 2 - edgeWidth / 2 - edgeIndex * edgeWidth;
-                return ratio * indexOffset;
-              });
+            const sign = rise <= 0 && run <= 0 ? -1 : 1;
+            const edgeDist = Math.sqrt(rise * rise + run * run);
+            const [xPerpOffset, yPerpOffset] = [perpRun, perpRise].map(r => sign * (r / edgeDist) * perpOffset);
 
-              return [
-                [x1, y1],
-                [x1 + xOffset, y1 + yOffset],
-                [x2 + xOffset, y2 + yOffset],
-                [x2, y2]
-              ];
-            })
+            // const tangOffset = maxEdgeOffset === 0 ? totalEdgesWidth / 2 : Math.cos(Math.asin(perpOffset / maxEdgeOffset)) * maxEdgeOffset;
+            // const [xTangOffset, yTangOffset] = [run, rise].map(r => (r / edgeDist) * tangOffset);
 
-            return <g key={subway.label}>
-              <polyline 
-                points={points}
-                strokeWidth={styles.track.strokeWidth} 
-                fill="none"
-                stroke={subway.color} />
-            </g>
-          })}
-        </g>
+            return [
+              [x1, y1],
+              [x1 + xPerpOffset, y1 + yPerpOffset],
+              [x2 + xPerpOffset, y2 + yPerpOffset],
+              [x2, y2]
+            ];
+          });
 
-        <g>
-            {Array.from(stationRefs.entries(), ([x, ys]) => 
-              <React.Fragment key={x}>
-                {Array.from(ys.entries(), ([y, ref]) => {
-                  const [cx, cy] = toSVG([x, y]);
-                  return <circle
-                      key={y} 
-                      ref={ref}
-                      cx={cx}
-                      cy={cy}
-                      r={styles.station.radius}
-                      strokeWidth={styles.station.strokeWidth}
-                      className='station-circle'
-                      tabIndex={-1}
-                      onClick={handleStationClick} />;
-                })}
-              </React.Fragment>
-            )}
-        </g>
+          return <g key={subway.label} data-subway={subway.label}>
+            <polyline
+              points={points}
+              strokeWidth={styles.track.strokeWidth} 
+              fill="none"
+              stroke={subway.color} />
+          </g>
+        })}
+      </g>
+      <g>
+          {Array.from(stationRefs.entries(), ([x, ys]) => 
+            <React.Fragment key={x}>
+              {Array.from(ys.entries(), ([y, ref]) => {
+                const [cx, cy] = toSVG([x, y]);
+                return <circle
+                    key={y} 
+                    ref={ref}
+                    cx={cx}
+                    cy={cy}
+                    r={styles.station.radius}
+                    strokeWidth={styles.station.strokeWidth}
+                    className='station-circle'
+                    tabIndex={-1}
+                    onClick={handleStationClick} />;
+              })}
+            </React.Fragment>
+          )}
+      </g>
     </svg>
   );
 }
