@@ -124,55 +124,67 @@ function App() {
     stationRef?.current?.focus();
   }
 
+  const stationWidth = 2 * (styles.station.radius + styles.station.strokeWidth);
+  const stations = subways.flatMap(subway => subway.stations);
+  const maxX = Math.max(...stations.map(([x, y]) => x));
+  const maxY = Math.max(...stations.map(([x, y]) => y));
+  const [bottom, right] = toSVG([maxX, maxY]).map(r => r + stationWidth);
+  const [top, left] = [0, 0];
+  const viewBox = [top, left, bottom, right];
+  const stationsTranslate = [stationWidth / 2, stationWidth / 2];
+
   return (
-    <svg version='1.1' baseProfile='full' width='100%' height='100%' viewBox='0 0 900 600' xmlns='http://www.w3.org/2000/svg'>
-      <g>
-        {subways.map(subway => {
-          const edges = zip(subway.stations, subway.stations.slice(1));
-          const points = Array.from(edges).flatMap(edge => {
-            const [[x1, y1], [x2, y2]] = edge.map(toSVG);
-            const [rise, run] = [y1 - y2, x1 - x2];
-            const [perpRise, perpRun] = rise === 0 || run === 0 ? [run, rise] : [-run, rise];
+    <svg version='1.1' baseProfile='full' width='100%' height='100%' viewBox={viewBox} xmlns='http://www.w3.org/2000/svg'>
+      <g transform={`translate(${stationsTranslate})`}>
+        <g>
+          {subways.map(subway => {
+            const edges = zip(subway.stations, subway.stations.slice(1));
+            const points = Array.from(edges).flatMap(edge => {
+              const [[x1, y1], [x2, y2]] = edge.map(toSVG);
+              const [rise, run] = [y1 - y2, x1 - x2];
+              const [perpRise, perpRun] = [-run, rise];
 
-            const key = normalizeEdge(edge).flat();
-            const labels = getNested(edgeLabels, key);
-            const edgeIndex = Array.from(labels).sort().indexOf(subway.label);
+              const key = normalizeEdge(edge).flat();
+              const labels = getNested(edgeLabels, key);
+              const edgeIndex = Array.from(labels).sort().indexOf(subway.label);
 
-            const totalEdgesWidth = 2 * styles.station.radius - styles.track.strokeWidth;
-            const edgeWidth = totalEdgesWidth / labels.size;
-            const maxEdgeOffset = totalEdgesWidth / 2 - edgeWidth / 2;
-            const perpOffset = maxEdgeOffset - edgeIndex * edgeWidth;
+              const totalEdgesWidth = 2 * styles.station.radius - styles.track.strokeWidth;
+              const edgeWidth = totalEdgesWidth / labels.size;
+              const maxPerpOffset = totalEdgesWidth / 2 - edgeWidth / 2;
+              const perpOffset = maxPerpOffset - edgeIndex * edgeWidth;
 
-            const sign = rise <= 0 && run <= 0 ? -1 : 1;
-            const edgeDist = Math.sqrt(rise * rise + run * run);
-            const [xPerpOffset, yPerpOffset] = [perpRun, perpRise].map(r => sign * (r / edgeDist) * perpOffset);
+              const sign = rise <= 0 && run <= 0 ? -1 : 1;
+              const edgeDist = Math.sqrt(rise * rise + run * run);
+              const [xPerpOffset, yPerpOffset] = [perpRun, perpRise].map(r => sign * (r / edgeDist) * perpOffset);
+              
+              const maxTangOffset = totalEdgesWidth / 2;
+              const sohClamp = Math.max(-1, Math.min(1, perpOffset / maxTangOffset)); //numbers like -1.000000002 give NaN in asin()
+              const tangOffset = maxPerpOffset === 0 ? maxTangOffset : Math.cos(Math.asin(sohClamp)) * maxTangOffset;
+              const [xTangOffset, yTangOffset] = [run, rise].map(r => (r / edgeDist) * tangOffset);
 
-            // const tangOffset = maxEdgeOffset === 0 ? totalEdgesWidth / 2 : Math.cos(Math.asin(perpOffset / maxEdgeOffset)) * maxEdgeOffset;
-            // const [xTangOffset, yTangOffset] = [run, rise].map(r => (r / edgeDist) * tangOffset);
+              return [
+                // [x1, y1],
+                [x1 + xPerpOffset - xTangOffset, y1 + yPerpOffset - yTangOffset],
+                [x2 + xPerpOffset + xTangOffset, y2 + yPerpOffset + yTangOffset],
+                // [x2, y2]
+              ];
+            });
 
-            return [
-              [x1, y1],
-              [x1 + xPerpOffset, y1 + yPerpOffset],
-              [x2 + xPerpOffset, y2 + yPerpOffset],
-              [x2, y2]
-            ];
-          });
-
-          return <g key={subway.label} data-subway={subway.label}>
-            <polyline
-              points={points}
-              strokeWidth={styles.track.strokeWidth} 
-              fill="none"
-              stroke={subway.color} />
-          </g>
-        })}
-      </g>
-      <g>
-          {Array.from(stationRefs.entries(), ([x, ys]) => 
-            <React.Fragment key={x}>
-              {Array.from(ys.entries(), ([y, ref]) => {
-                const [cx, cy] = toSVG([x, y]);
-                return <circle
+            return <g key={subway.label} data-subway={subway.label}>
+              <polyline
+                points={points}
+                strokeWidth={styles.track.strokeWidth} 
+                fill="none"
+                stroke={subway.color} />
+            </g>
+          })}
+        </g>
+        <g>
+            {Array.from(stationRefs.entries(), ([x, ys]) => 
+              <React.Fragment key={x}>
+                {Array.from(ys.entries(), ([y, ref]) => {
+                  const [cx, cy] = toSVG([x, y]);
+                  return <circle
                     key={y} 
                     ref={ref}
                     cx={cx}
@@ -182,9 +194,10 @@ function App() {
                     className='station-circle'
                     tabIndex={-1}
                     onClick={handleStationClick} />;
-              })}
-            </React.Fragment>
-          )}
+                })}
+              </React.Fragment>
+            )}
+        </g>
       </g>
     </svg>
   );
