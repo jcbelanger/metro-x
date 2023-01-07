@@ -1,91 +1,13 @@
 import './App.css';
+import { zip, comparator } from './utils';
+import NestedMap from './nested';
 import React, { useState } from 'react';
-import * as metroCity from './metro-city.json';
+import ReactCSSTransitionGroup from 'react-transition-group';
+import metroCity from './metro-city.json';
 
-function zip(...iterables) {
-  const iters = iterables.map(iterable => iterable[Symbol.iterator]());
-  return {
-    [Symbol.iterator]() {
-      return {
-        next: () => {
-          let results = iters.map(iter => iter.next());
-          return {
-            value: results.map(result => result.value),
-            done: results.some(result => result.done)
-          };
-        }
-      }
-    }
-  };
-}
-
-function hasNested(data, keys) {
-  var value = data;
-  for (const key of keys) {
-    if (!value.has(key)) {
-      return false;
-    }
-    value = value.get(key);
-  }
-  return true;
-}
-
-function getNested(data, keys) {
-  var value = data;
-  for (const key of keys) {
-    if (!value.has(key)) {
-      return undefined;
-    }
-    value = value.get(key);
-  }
-  return value;
-}
-
-function setNested(data, keys, combine, initial) {
-  const lastData = keys.slice(0, -1).reduce(
-    (prevData, key) => {
-      if (prevData.has(key)) {
-        return prevData.get(key);
-      } else {
-        const nextData = new Map();
-        prevData.set(key, nextData);
-        return nextData;
-      }
-    }, data);
-
-  const lastKey = keys[keys.length - 1];
-
-  let lastValue;
-  if (lastData.has(lastKey)) {
-    lastValue = combine(lastData.get(lastKey))
-  } else {
-    lastValue = initial();
-  }
-
-  lastData.set(lastKey, lastValue);
-  return lastValue;
-}
-
-function comparator(...keys) {
-  return (a, b) => {
-    for (const key of keys) {
-      const compare = key(a) - key(b);
-      if (compare !== 0) {
-        return compare;
-      }
-    }
-    return 0;
-  };
-}
-
-function normalizeEdge(edge) {
-  return edge.sort(comparator(
-    ([x,y]) => x,
-    ([x,y]) => y,
-  ));
-}
 
 function App() {
+  // eslint-disable-next-line no-unused-vars
   const [subways, setSubways] = useState(Array.from(metroCity));
 
   const styles = {
@@ -100,27 +22,34 @@ function App() {
   };
 
   function toSVG(xy) {
-    return xy.map(d =>  d * styles.spacing);
+    return xy.map(d => d * styles.spacing + styles.station.radius + styles.station.strokeWidth);
   }
 
-  const stationRefs = new Map();
+  function normalizeEdge(edge) {
+    return edge.sort(comparator(
+      ([x, y]) => x,
+      ([x, y]) => y,
+    ));
+  }
+
+  const stationRefs = new NestedMap();
   for (const subway of subways) {
     for (const xy of subway.stations) {
-      setNested(stationRefs, xy, prev => prev, () => React.createRef());
+      stationRefs.set(xy, prev => prev, () => React.createRef());
     }
   }
 
-  const edgeLabels = new Map();
+  const edgeLabels = new NestedMap();
   for (const subway of subways) {
     const edges = zip(subway.stations, subway.stations.slice(1));
     for (const edge of edges) {
       const key = normalizeEdge(edge).flat();
-      setNested(edgeLabels, key, prev => prev.add(subway.label), () => new Set([subway.label]));
+      edgeLabels.set(key, prev => prev.add(subway.label), () => new Set([subway.label]));
     }
   }
-  
-  function handleStationClick(x, y) {
-    const stationRef = stationRefs.get(x)?.get(y);
+
+  function handleStationClick(xy) {
+    const stationRef = stationRefs.get(xy);
     stationRef?.current?.focus();
   }
 
@@ -135,69 +64,71 @@ function App() {
 
   return (
     <svg version='1.1' baseProfile='full' width='100%' height='100%' viewBox={viewBox} xmlns='http://www.w3.org/2000/svg'>
-      <g transform={`translate(${stationsTranslate})`}>
-        <g>
-          {subways.map(subway => {
-            const edges = zip(subway.stations, subway.stations.slice(1));
-            const points = Array.from(edges).flatMap(edge => {
-              const [[x1, y1], [x2, y2]] = edge.map(toSVG);
-              const [rise, run] = [y1 - y2, x1 - x2];
-              const [perpRise, perpRun] = [-run, rise];
+      <g>
+        {subways.map(subway => {
+          const edges = zip(subway.stations, subway.stations.slice(1));
+          const points = Array.from(edges).flatMap(edge => {
+            const [[x1, y1], [x2, y2]] = edge.map(toSVG);
+            const [rise, run] = [y1 - y2, x1 - x2];
+            const [perpRise, perpRun] = [-run, rise];
 
-              const key = normalizeEdge(edge).flat();
-              const labels = getNested(edgeLabels, key);
-              const edgeIndex = Array.from(labels).sort().indexOf(subway.label);
+            const key = normalizeEdge(edge).flat();
+            const labels = edgeLabels.get(key);
+            const edgeIndex = Array.from(labels).sort().indexOf(subway.label);
 
-              const totalEdgesWidth = 2 * styles.station.radius - styles.track.strokeWidth;
-              const edgeWidth = totalEdgesWidth / labels.size;
-              const maxPerpOffset = totalEdgesWidth / 2 - edgeWidth / 2;
-              const perpOffset = maxPerpOffset - edgeIndex * edgeWidth;
+            const totalEdgesWidth = 2 * styles.station.radius - styles.track.strokeWidth;
+            const edgeWidth = totalEdgesWidth / labels.size;
+            const maxPerpOffset = totalEdgesWidth / 2 - edgeWidth / 2;
+            const perpOffset = maxPerpOffset - edgeIndex * edgeWidth;
 
-              const sign = rise <= 0 && run <= 0 ? -1 : 1;
-              const edgeDist = Math.sqrt(rise * rise + run * run);
-              const [xPerpOffset, yPerpOffset] = [perpRun, perpRise].map(r => sign * (r / edgeDist) * perpOffset);
-              
-              const maxTangOffset = totalEdgesWidth / 2;
-              const sohClamp = Math.max(-1, Math.min(1, perpOffset / maxTangOffset)); //numbers like -1.000000002 give NaN in asin()
-              const tangOffset = maxPerpOffset === 0 ? maxTangOffset : Math.cos(Math.asin(sohClamp)) * maxTangOffset;
-              const [xTangOffset, yTangOffset] = [run, rise].map(r => (r / edgeDist) * tangOffset);
+            const sign = rise <= 0 && run <= 0 ? -1 : 1;
+            const edgeDist = Math.sqrt(rise * rise + run * run);
+            const [xPerpOffset, yPerpOffset] = [perpRun, perpRise].map(r => sign * (r / edgeDist) * perpOffset);
 
-              return [
-                // [x1, y1],
-                [x1 + xPerpOffset - xTangOffset, y1 + yPerpOffset - yTangOffset],
-                [x2 + xPerpOffset + xTangOffset, y2 + yPerpOffset + yTangOffset],
-                // [x2, y2]
-              ];
-            });
+            const maxTangOffset = totalEdgesWidth / 2;
+            const sohClamp = Math.max(-1, Math.min(1, perpOffset / maxTangOffset)); //numbers like -1.000000002 give NaN in asin()
+            const tangOffset = maxPerpOffset === 0 ? maxTangOffset : Math.cos(Math.asin(sohClamp)) * maxTangOffset;
+            const [xTangOffset, yTangOffset] = [run, rise].map(r => (r / edgeDist) * tangOffset);
 
-            return <g key={subway.label} data-subway={subway.label}>
-              <polyline
-                points={points}
-                strokeWidth={styles.track.strokeWidth} 
-                fill="none"
-                stroke={subway.color} />
-            </g>
-          })}
-        </g>
-        <g>
-            {Array.from(stationRefs.entries(), ([x, ys]) => 
-              <React.Fragment key={x}>
-                {Array.from(ys.entries(), ([y, ref]) => {
-                  const [cx, cy] = toSVG([x, y]);
-                  return <circle
-                    key={y} 
-                    ref={ref}
-                    cx={cx}
-                    cy={cy}
-                    r={styles.station.radius}
-                    strokeWidth={styles.station.strokeWidth}
-                    className='station-circle'
-                    tabIndex={-1}
-                    onClick={handleStationClick} />;
-                })}
-              </React.Fragment>
-            )}
-        </g>
+            return [
+              // [x1, y1],
+              [x1 + xPerpOffset - xTangOffset, y1 + yPerpOffset - yTangOffset],
+              [x2 + xPerpOffset + xTangOffset, y2 + yPerpOffset + yTangOffset],
+              // [x2, y2]
+            ];
+          });
+
+          return <g 
+            key={subway.label} 
+            data-subway={subway.label}>
+            <polyline
+              points={points}
+              strokeWidth={styles.track.strokeWidth}
+              fill="none"
+              stroke={subway.color} />
+          </g>
+        })}
+      </g>
+      <g>
+        {Array.from(stationRefs, ([[x, y], ref]) => {
+          const [cx, cy] = toSVG([x, y]);
+          const stroke = subways.find(subway => {
+            const [endX, endY] = subway.stations[subway.stations.length - 1];
+            return x === endX && y === endY;
+          })?.color ?? '#7e786c';
+
+          return <circle
+            key={[x, y]}
+            ref={ref}
+            cx={cx}
+            cy={cy}
+            r={styles.station.radius}
+            strokeWidth={styles.station.strokeWidth}
+            stroke={stroke}
+            className='station-circle'
+            tabIndex={-1}
+            onClick={() => handleStationClick([x, y])} />;
+        })}
       </g>
     </svg>
   );
