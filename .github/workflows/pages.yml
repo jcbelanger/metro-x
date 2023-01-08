@@ -1,12 +1,15 @@
-name: gh-pages
+name: pages
 on:
   push:
-    branches:
-      - main
+    branches: [$default-branch]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 jobs:
   gh-pages:
     concurrency:
-      group: "gh-pages"
+      group: "pages"
       cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
