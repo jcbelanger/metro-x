@@ -3,7 +3,7 @@
 		"label": "A",
 		"size": 2,
 		"points": [2, 1],
-		"color": "#901f1a",
+		"color": "#d11e29",
 		"cars": [-2.5, 0],
 		"stations": [
 			[0, 0],
@@ -23,7 +23,7 @@
 		"label": "B",
 		"size": 2,
 		"points": [4, 2],
-		"color": "#c7672c",
+		"color": "#f2801e",
 		"cars": [-2.5, 1.5],
 		"stations": [
 			[0, 0],
@@ -46,7 +46,7 @@
 		"label": "C",
 		"size": 3,
 		"points": [7, 5],
-		"color": "#c14f68",
+		"color": "#e8549b",
 		"cars": [-2.5, 2.5],
 		"stations": [
             [2, 3],
@@ -69,7 +69,7 @@
 		"label": "D",
 		"size": 3,
 		"points": [5, 3],
-		"color": "#617a27",
+		"color": "#83c143",
 		"cars": [-2.5, 3.5],
 		"stations": [
             [1, 4],
@@ -94,7 +94,7 @@
 		"label": "E",
 		"size": 3,
 		"points": [4, 2],
-		"color": "#c88514",
+		"color": "#fbb418",
 		"cars": [-2.5, 4.5],
 		"stations": [
             [2, 6],
@@ -118,7 +118,7 @@
 		"label": "F",
 		"size": 2,
 		"points": [4, 2],
-		"color": "#613c60",
+		"color": "#8051a2",
 		"cars": [-2.5, 5.5],
 		"stations": [
             [3, 7],
@@ -138,7 +138,7 @@
 		"label": "G",
 		"size": 2,
 		"points": [5, 3],
-		"color": "#085181",
+		"color": "#008bd4",
 		"cars": [-2.5, 6.5],
 		"stations": [
 		    [3, 7],
@@ -159,7 +159,7 @@
 		"label": "H",
 		"size": 3,
 		"points": [6, 4],
-		"color": "#453f3a",
+		"color": "#586264",
 		"cars": [-2.5, 7.5],
 		"stations": [
 		    [2, 8],
@@ -182,7 +182,7 @@
 		"label": "I",
 		"size": 3,
 		"points": [4, 2],
-		"color": "#074f4b",
+		"color": "#008574",
 		"cars": [-2.5, 8.5],
 		"stations": [
 		    [3, 9],

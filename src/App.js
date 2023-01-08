@@ -12,11 +12,11 @@ function App() {
   const styles = {
     spacing: 50,
     station: {
-      radius: 15,
-      strokeWidth: 5
+      radius: 18,
+      strokeWidth: 2
     },
     track: {
-      strokeWidth: 5
+      strokeWidth: 9
     }
   };
 
@@ -74,7 +74,7 @@ function App() {
             const labels = edgeLabels.get(key);
             const edgeIndex = Array.from(labels).sort().indexOf(subway.label);
 
-            const totalEdgesWidth = 2 * styles.station.radius - styles.track.strokeWidth;
+            const totalEdgesWidth = 2 * styles.station.radius - styles.station.strokeWidth;
             const edgeWidth = totalEdgesWidth / labels.size;
             const maxPerpOffset = totalEdgesWidth / 2 - edgeWidth / 2;
             const perpOffset = maxPerpOffset - edgeIndex * edgeWidth;
@@ -83,16 +83,18 @@ function App() {
             const edgeDist = Math.sqrt(rise * rise + run * run);
             const [xPerpOffset, yPerpOffset] = [perpRun, perpRise].map(r => sign * (r / edgeDist) * perpOffset);
 
-            const maxTangOffset = totalEdgesWidth / 2;
+            const maxTangOffset = totalEdgesWidth / 2 - styles.track.strokeWidth;
             const sohClamp = Math.max(-1, Math.min(1, perpOffset / maxTangOffset)); //numbers like -1.000000002 give NaN in asin()
             const tangOffset = maxPerpOffset === 0 ? maxTangOffset : Math.cos(Math.asin(sohClamp)) * maxTangOffset;
             const [xTangOffset, yTangOffset] = [run, rise].map(r => (r / edgeDist) * tangOffset);
 
             return [
-              // [x1, y1],
+              [x1, y1],
               [x1 + xPerpOffset - xTangOffset, y1 + yPerpOffset - yTangOffset],
               [x2 + xPerpOffset + xTangOffset, y2 + yPerpOffset + yTangOffset],
-              // [x2, y2]
+              //[x1 + xPerpOffset - xTangOffset, y1 + yPerpOffset - yTangOffset],
+              //[x2 + xPerpOffset + xTangOffset, y2 + yPerpOffset + yTangOffset],
+              [x2, y2]
             ];
           });
 
@@ -110,10 +112,6 @@ function App() {
       <g>
         {Array.from(stationRefs, ([[x, y], ref]) => {
           const [cx, cy] = toSVG([x, y]);
-          const stroke = subways.find(subway => {
-            const [endX, endY] = subway.stations[subway.stations.length - 1];
-            return x === endX && y === endY;
-          })?.color ?? '#7e786c';
 
           return <circle
             key={[x, y]}
@@ -122,7 +120,6 @@ function App() {
             cy={cy}
             r={styles.station.radius}
             strokeWidth={styles.station.strokeWidth}
-            stroke={stroke}
             className='station-circle'
             tabIndex={-1}
             onClick={() => handleStationClick([x, y])} />;
