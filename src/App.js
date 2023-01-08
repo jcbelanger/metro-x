@@ -2,7 +2,6 @@ import './App.css';
 import { zip, comparator } from './utils';
 import NestedMap from './nested';
 import React, { useState } from 'react';
-// import ReactCSSTransitionGroup from 'react-transition-group';
 import metroCity from './metro-city.json';
 
 
