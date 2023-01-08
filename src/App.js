@@ -2,7 +2,7 @@ import './App.css';
 import { zip, comparator } from './utils';
 import NestedMap from './nested';
 import React, { useState } from 'react';
-import ReactCSSTransitionGroup from 'react-transition-group';
+// import ReactCSSTransitionGroup from 'react-transition-group';
 import metroCity from './metro-city.json';
 
 
@@ -60,7 +60,6 @@ function App() {
   const [bottom, right] = toSVG([maxX, maxY]).map(r => r + stationWidth);
   const [top, left] = [0, 0];
   const viewBox = [top, left, bottom, right];
-  const stationsTranslate = [stationWidth / 2, stationWidth / 2];
 
   return (
     <svg version='1.1' baseProfile='full' width='100%' height='100%' viewBox={viewBox} xmlns='http://www.w3.org/2000/svg'>
