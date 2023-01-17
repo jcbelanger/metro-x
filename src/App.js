@@ -20,6 +20,25 @@ function App() {
       strokeWidth: 8,
       edgeGap: 2
     },
+    routeName: {
+      radius: 20
+    },
+    completionBonus: {
+      initial: {
+        width: 24,
+        height: 30,
+        strokeWidth: 1,
+        dx: -8,
+        dy: -5
+      },
+      subsequent: {
+        width: 18,
+        height: 20,
+        strokeWidth: 2,
+        dx: 5,
+        dy: 8
+      }
+    },
     trainCar: {
       paddingX: 9,
       paddingY: 6,
@@ -68,37 +87,46 @@ function App() {
     stationRef?.current?.focus();
   }
 
-  const stationWidth = 2 * (styles.station.radius + styles.station.strokeWidth);
-  const points = subways.flatMap(subway => [subway.trainCar, ...subway.route]);
+  const padding = 30;
+  const points = subways.flatMap(({route, trainCar:[x, y]}) => [[x-2, y], [x-1, y], [x, y], ...route]);
   const xs = points.map(([x, y]) => x);
   const ys = points.map(([x, y]) => y);
   const maxX = Math.max(...xs);
   const maxY = Math.max(...ys);
   const minX = Math.min(...xs);
   const minY = Math.min(...ys);
-  const [right, bottom] = [maxX, maxY].map(r => r * styles.spacing + stationWidth);
-  const [left, top] = [minX, minY].map(r => r * styles.spacing - stationWidth);
+  const [right, bottom] = [maxX, maxY].map(r => r * styles.spacing + padding);
+  const [left, top] = [minX, minY].map(r => r * styles.spacing - padding);
   const viewBox = [left, top, right - left, bottom - top];
 
   return (
     <svg version='1.1' baseProfile='full' width='100%' height='100%' viewBox={viewBox} xmlns='http://www.w3.org/2000/svg'>
       <defs>
 
-        <filter id="train-car-drop-shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
           <feOffset dx="4" dy="2" />
           <feComponentTransfer>
-            <feFuncA type="linear" slope="0.4"/>
+            <feFuncA type="linear" slope="0.1"/>
           </feComponentTransfer>
           <feBlend in="SourceGraphic" />
         </filter>
 
-        <filter id='train-car-window-border'>
+        <filter id='lighten'>
           <feComponentTransfer>
             <feFuncR type='linear' slope='1.6' />
             <feFuncG type='linear' slope='1.6' />
             <feFuncB type='linear' slope='1.6' />
           </feComponentTransfer>
+        </filter>
+
+        <filter id="lighting">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur1"/>
+          <feSpecularLighting result="specOut" in="blur1" specularConstant="1.8" specularExponent="50" lighting-color="#fff">
+            <feDistantLight azimuth="225" elevation="45"/>
+          </feSpecularLighting>
+          <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="result"/>
+          <feComposite operator="atop" in2="SourceGraphic"/>
         </filter>
 
       </defs>

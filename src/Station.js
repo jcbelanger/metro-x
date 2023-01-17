@@ -7,6 +7,7 @@ const Station = React.forwardRef(({subways, position, styles, onClick}, ref) => 
     ref={ref}
     cx={cx}
     cy={cy}
+    filter='url(#lighting)'
     r={styles.station.radius}
     strokeWidth={styles.station.strokeWidth}
     className='station-circle'
