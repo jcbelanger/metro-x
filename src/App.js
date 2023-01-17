@@ -1,6 +1,6 @@
 import './App.css';
 import React, { useState } from 'react';
-import { zip, comparator } from './utils';
+import { zip } from './utils';
 import metroCity from './metro-city.json';
 import NestedMap from './nested';
 import Subway from './Subway';
