@@ -1,11 +1,11 @@
 [
 	{
-		"label": "A",
-		"size": 2,
-		"points": [2, 1],
+		"name": "A",
+		"windows": 2,
+		"routeCompletionBonus": [2, 1],
 		"color": "#d11e29",
-		"cars": [-2.5, 0],
-		"stations": [
+		"trainCar": [-2.5, 0],
+		"route": [
 			[0, 0],
 			[1, 0],
 			[1, 1],
@@ -20,12 +20,12 @@
 		]
 	},
 	{
-		"label": "B",
-		"size": 2,
-		"points": [4, 2],
+		"name": "B",
+		"windows": 2,
+		"routeCompletionBonus": [4, 2],
 		"color": "#f2801e",
-		"cars": [-2.5, 1.5],
-		"stations": [
+		"trainCar": [-2.5, 1.5],
+		"route": [
 			[0, 0],
 			[1, 0],
 			[1, 1],
@@ -43,12 +43,12 @@
 		]
 	},
 	{
-		"label": "C",
-		"size": 3,
-		"points": [7, 5],
+		"name": "C",
+		"windows": 3,
+		"routeCompletionBonus": [7, 5],
 		"color": "#e8549b",
-		"cars": [-2.5, 2.5],
-		"stations": [
+		"trainCar": [-2.5, 2.5],
+		"route": [
             [2, 3],
             [3, 3],
             [5, 3],
@@ -66,12 +66,12 @@
 		]
 	},
 	{
-		"label": "D",
-		"size": 3,
-		"points": [5, 3],
+		"name": "D",
+		"windows": 3,
+		"routeCompletionBonus": [5, 3],
 		"color": "#83c143",
-		"cars": [-2.5, 3.5],
-		"stations": [
+		"trainCar": [-2.5, 3.5],
+		"route": [
             [1, 4],
             [1, 5],
             [2, 5],
@@ -91,12 +91,12 @@
 		]
 	},
 	{
-		"label": "E",
-		"size": 3,
-		"points": [4, 2],
+		"name": "E",
+		"windows": 3,
+		"routeCompletionBonus": [4, 2],
 		"color": "#fbb418",
-		"cars": [-2.5, 4.5],
-		"stations": [
+		"trainCar": [-2.5, 4.5],
+		"route": [
             [2, 6],
             [4, 6],
             [4, 7],
@@ -115,12 +115,12 @@
 		]
 	},
 	{
-		"label": "F",
-		"size": 2,
-		"points": [4, 2],
+		"name": "F",
+		"windows": 2,
+		"routeCompletionBonus": [4, 2],
 		"color": "#8051a2",
-		"cars": [-2.5, 5.5],
-		"stations": [
+		"trainCar": [-2.5, 5.5],
+		"route": [
             [3, 7],
             [4, 7],
             [5, 6],
@@ -135,12 +135,12 @@
 		]
 	},
 	{
-		"label": "G",
-		"size": 2,
-		"points": [5, 3],
+		"name": "G",
+		"windows": 2,
+		"routeCompletionBonus": [5, 3],
 		"color": "#008bd4",
-		"cars": [-2.5, 6.5],
-		"stations": [
+		"trainCar": [-2.5, 6.5],
+		"route": [
 		    [3, 7],
             [4, 7],
             [5, 6],
@@ -156,12 +156,12 @@
 		]
 	},
 	{
-		"label": "H",
-		"size": 3,
-		"points": [6, 4],
+		"name": "H",
+		"windows": 3,
+		"routeCompletionBonus": [6, 4],
 		"color": "#586264",
-		"cars": [-2.5, 7.5],
-		"stations": [
+		"trainCar": [-2.5, 7.5],
+		"route": [
 		    [2, 8],
 		    [3, 8],
 		    [4, 8],
@@ -179,12 +179,12 @@
 		]
 	},
 	{
-		"label": "I",
-		"size": 3,
-		"points": [4, 2],
+		"name": "I",
+		"windows": 3,
+		"routeCompletionBonus": [4, 2],
 		"color": "#008574",
-		"cars": [-2.5, 8.5],
-		"stations": [
+		"trainCar": [-2.5, 8.5],
+		"route": [
 		    [3, 9],
 		    [4, 9],
 		    [5, 9],

@@ -1,3 +1,20 @@
+function rangeMap(n, fn) {
+    let i = 0;
+    return {
+        [Symbol.iterator]() {
+            return {
+                next: () => {
+                    const result = {
+                        value: fn(i),
+                        done: i >= n
+                    };
+                    i++;
+                    return result;
+                }
+            }
+        }
+    };
+}
 
 function zip(...iterables) {
     const iters = iterables.map(iterable => iterable[Symbol.iterator]());
@@ -29,6 +46,7 @@ function comparator(...keys) {
 }
 
 export {
+    rangeMap,
     zip, 
     comparator
 };
