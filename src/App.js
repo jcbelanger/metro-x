@@ -35,6 +35,11 @@ function App() {
       wheels: {
         margin: 9,
         radius: 8
+      },
+      underTrack: {
+        strokeWidth: 4,
+        margin: 2,
+        dashes: 1
       }
     }
   });
@@ -86,14 +91,26 @@ function App() {
   return (
     <svg version='1.1' baseProfile='full' width='100%' height='100%' viewBox={viewBox} xmlns='http://www.w3.org/2000/svg'>
       <defs>
-        <filter id="trainCarWindowBorder">
+
+        <filter id="train-car-drop-shadow" x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+          <feOffset dx="4" dy="2" />
           <feComponentTransfer>
-            <feFuncR type="linear" slope="1.8" />
-            <feFuncG type="linear" slope="1.8" />
-            <feFuncB type="linear" slope="1.8" />
+            <feFuncA type="linear" slope="0.4"/>
+          </feComponentTransfer>
+          <feBlend in="SourceGraphic" />
+        </filter>
+
+        <filter id='train-car-window-border'>
+          <feComponentTransfer>
+            <feFuncR type='linear' slope='1.6' />
+            <feFuncG type='linear' slope='1.6' />
+            <feFuncB type='linear' slope='1.6' />
           </feComponentTransfer>
         </filter>
+
       </defs>
+
       <g className='train-carts'>
         {subways.map(subway => {
           const {
@@ -114,6 +131,11 @@ function App() {
             wheels: {
               margin: wheelsMargin,
               radius: wheelRadius
+            },
+            underTrack: {
+              margin: underTrackMargin,
+              strokeWidth: underTrackWidth,
+              dashes: underTrackDashes
             }
           } = styles.trainCar;
 
@@ -136,93 +158,116 @@ function App() {
 
           const numWheels = Math.max(2, subway.windows);
 
-          return <g key={subway.name} classname="train-cart">
+          const underTrackLeft = left + wheelsMargin + wheelRadius;
+          const underTrackY = top + trainCarHeight + underTrackMargin + underTrackWidth / 2;
+          const underTrackLength= trainCarWidth - 2 * wheelsMargin - 2 * wheelRadius
 
-            <g className="wheels">
-              {[...rangeMap(numWheels, wheelIndex => {
-                const wheelsWidth = trainCarWidth - 2 * wheelsMargin - 2 * wheelRadius;
-                const wheelStep = wheelsWidth / (numWheels - 1);
-                const wheelCx = left + wheelsMargin + wheelRadius + wheelIndex * wheelStep;
-                const wheelCy = top + trainCarHeight;
-                return <circle
-                  cx={wheelCx}
-                  cy={wheelCy}
-                  r={wheelRadius}
-                  fill="#22211e"
-                />;
-              })]}
-            </g>
+          return <g className='train-cart-with-under'>
 
-            <path 
-                class="train-cart-body"
-                id={bodyId}
-                fill={subway.color} 
-                d={`
-                  M${left},${top}
-                  m${0},${verticalPadding}
-                  a${horizontalPadding},${verticalPadding} 0 0,1 ${horizontalPadding},${-verticalPadding}
-                  h${trainCarWidth - 2 * horizontalPadding - frontCornerX}
-                  a${horizontalPadding + frontCornerX},${verticalPadding + frontCornerY} 0 0,1 ${horizontalPadding + frontCornerX},${verticalPadding + frontCornerY}
-                  v${trainCarHeight - frontCornerY - verticalPadding}
-                  h${-trainCarWidth}
-                  z
-                `}
-              />
+            <path
+              className='under-track' 
+              d={`
+                M${underTrackLeft},${underTrackY}
+                h${underTrackLength}
+              `}
+              stroke="#9aa2a5"
+              strokeWidth={underTrackWidth}
+              strokeDasharray={underTrackDashes}
+            />
 
-              <clipPath id={bodyClipId}>
-                <use href={`#${bodyId}`} />
-              </clipPath>
+            <g 
+              key={subway.name} 
+              classname='train-cart'
+              filter="url(#train-car-drop-shadow)"
+            >
 
-              <g classname="front">
-                <circle 
-                  classname="front-light"
-                  cx={frontLightCx}
-                  cy={frontLightCy}
-                  r={frontLightRadius}
-                  fill="#22211e"
-                />
-
-                <rect 
-                  classname="front-window"
-                  x={frontWindowLeft}
-                  y={top}
-                  width={frontWidth}
-                  height={frontWindowHeight}
-                  fill="#22211e"
-                  clip-path={`url(#${bodyClipId})`}
-                />
-              </g>
-
-              <g className="windows">
-                {[...rangeMap(subway.windows, windowIndex => {
-                  const windowLeft = left + horizontalPadding + windowIndex * (windowWidth + windowGap);
-                  const windowTop = top + verticalPadding;
-                  return <g classname="window" key={windowIndex}>
-                    <rect
-                      x={windowLeft}
-                      y={windowTop}
-                      width={windowWidth}
-                      height={windowHeight}
-                      fill="#ffffff"
-                    />
-                    <path 
-                      strokeWidth={windowBorder}
-                      strokeLinejoin="round"
-                      fill="none"
-                      stroke={subway.color}
-                      d={`M${windowLeft},${windowTop} h${windowWidth} v${windowHeight} h${-windowWidth} z`} 
-                      filter="url(#trainCarWindowBorder)"
-                    />
-                  </g>;
+              <g className='wheels'>
+                {[...rangeMap(numWheels, wheelIndex => {
+                  const wheelsWidth = trainCarWidth - 2 * wheelsMargin - 2 * wheelRadius;
+                  const wheelStep = wheelsWidth / (numWheels - 1);
+                  const wheelCx = left + wheelsMargin + wheelRadius + wheelIndex * wheelStep;
+                  const wheelCy = top + trainCarHeight;
+                  return <circle
+                    className='wheel'
+                    cx={wheelCx}
+                    cy={wheelCy}
+                    r={wheelRadius}
+                    fill='#22211e'
+                  />;
                 })]}
               </g>
+
+              <path 
+                  class='train-cart-body'
+                  id={bodyId}
+                  fill={subway.color}
+                  d={`
+                    M${left},${top}
+                    m${0},${verticalPadding}
+                    a${horizontalPadding},${verticalPadding} 0 0,1 ${horizontalPadding},${-verticalPadding}
+                    h${trainCarWidth - 2 * horizontalPadding - frontCornerX}
+                    a${horizontalPadding + frontCornerX},${verticalPadding + frontCornerY} 0 0,1 ${horizontalPadding + frontCornerX},${verticalPadding + frontCornerY}
+                    v${trainCarHeight - frontCornerY - verticalPadding}
+                    h${-trainCarWidth}
+                    z
+                  `}
+                />
+
+                <clipPath id={bodyClipId}>
+                  <use href={`#${bodyId}`} />
+                </clipPath>
+
+                <g classname='front'>
+                  <circle 
+                    classname='front-light'
+                    cx={frontLightCx}
+                    cy={frontLightCy}
+                    r={frontLightRadius}
+                    fill='#22211e'
+                  />
+
+                  <rect 
+                    classname='front-window'
+                    x={frontWindowLeft}
+                    y={top}
+                    width={frontWidth}
+                    height={frontWindowHeight}
+                    fill='#22211e'
+                    clip-path={`url(#${bodyClipId})`}
+                  />
+                </g>
+
+                <g className='windows'>
+                  {[...rangeMap(subway.windows, windowIndex => {
+                    const windowLeft = left + horizontalPadding + windowIndex * (windowWidth + windowGap);
+                    const windowTop = top + verticalPadding;
+                    return <g classname='window' key={windowIndex}>
+                      <rect
+                        x={windowLeft}
+                        y={windowTop}
+                        width={windowWidth}
+                        height={windowHeight}
+                        fill='#ffffff'
+                      />
+                      <path 
+                        strokeWidth={windowBorder}
+                        strokeLinejoin='round'
+                        fill='none'
+                        stroke={subway.color}
+                        d={`M${windowLeft},${windowTop} h${windowWidth} v${windowHeight} h${-windowWidth} z`} 
+                        filter='url(#train-car-window-border)'
+                      />
+                    </g>;
+                  })]}
+                </g>
+            </g>
           </g>;
         })}
       </g>
       <g>
         {subways.map(subway => {
           const edges = zip(subway.route, subway.route.slice(1));
-          const points = Array.from(edges).flatMap(edge => {
+          const points = [...edges].flatMap(edge => {
             const [[x1, y1], [x2, y2]] = edge.map(toSVG);
             const [rise, run] = [y1 - y2, x1 - x2];
             const [perpRise, perpRun] = [-run, rise];
@@ -253,15 +298,15 @@ function App() {
               //[x2, y2]
             ];
           });
-
+          
           return <g 
             key={subway.name} 
             data-subway={subway.name}>
             <polyline
               points={points}
               strokeWidth={styles.route.strokeWidth}
-              strokeLinejoin="round"
-              fill="none"
+              strokeLinejoin='round'
+              fill='none'
               stroke={subway.color}
             />
           </g>
