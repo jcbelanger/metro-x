@@ -21,9 +21,10 @@ function App() {
       verticalPadding: 6,
       horizontalPadding: 9,
       front: {
-        cornerX: 5,
+        cornerX: 9,
         cornerY: 15,
-        lightRadius: 4
+        width: 10,
+        lightRadius: 2.5
       },
       window: {
         gap: 8,
@@ -97,6 +98,7 @@ function App() {
             front: {
               cornerX: frontCornerX,
               cornerY: frontCornerY,
+              width: frontWidth,
               lightRadius: frontLightRadius
             },
             window: {
@@ -111,33 +113,55 @@ function App() {
           const numWindowGaps = Math.max(0, subway.windows - 1);
           const trainCarWidth = subway.windows * windowWidth + numWindowGaps * windowGap + 2 * horizontalPadding + frontCornerX;
           const trainCarHeight = windowHeight + 2 * verticalPadding;
-          const left = cx;
+          const left = cx - windowWidth / 2 - horizontalPadding;
           const top = cy - trainCarHeight / 2;
 
-          const trainCartPathId = `train-cart-body-${subway.name}`;
-          
+          const bodyId = `train-cart-body-${subway.name}`;
+          const bodyClipId = `train-cart-body-clip-${subway.name}`;
+
+          const frontLightMargin = frontWidth / 2 - frontLightRadius;
+          const frontLightCx = left + trainCarWidth - frontLightRadius - frontLightMargin;
+          const frontLightCy = top + trainCarHeight - frontLightRadius - frontLightMargin;
+
+          const frontWindowLeft = left + trainCarWidth - frontWidth;
+          const frontWindowHeight = trainCarHeight - 2 * (frontLightMargin + frontLightRadius);
+
           return <g key={subway.name}>
             <path 
-                id={trainCartPathId}
+                id={bodyId}
                 fill={subway.color} 
                 d={`
                   M${left},${top}
                   m${0},${verticalPadding}
                   a${horizontalPadding},${verticalPadding} 0 0,1 ${horizontalPadding},${-verticalPadding}
-                  h${trainCarWidth - 2 * horizontalPadding}
+                  h${trainCarWidth - 2 * horizontalPadding - frontCornerX}
                   a${horizontalPadding + frontCornerX},${verticalPadding + frontCornerY} 0 0,1 ${horizontalPadding + frontCornerX},${verticalPadding + frontCornerY}
-                  v${trainCarHeight - verticalPadding - frontCornerY}
-                  h${-trainCarWidth - frontCornerX}
+                  v${trainCarHeight - frontCornerY - verticalPadding}
+                  h${-trainCarWidth}
                   z
                 `}
               />
 
+              <clipPath id={bodyClipId}>
+                <use href={`#${bodyId}`} />
+              </clipPath>
+
               <circle 
-                cx={left + trainCarWidth - frontLightRadius + frontCornerX - (frontCornerX - frontLightRadius)}
-                cy={top + trainCarHeight - frontLightRadius - (frontCornerX - frontLightRadius)}
+                cx={frontLightCx}
+                cy={frontLightCy}
                 r={frontLightRadius}
-                fill="#000"
+                fill="#22211e"
               />
+
+              <rect 
+                x={frontWindowLeft}
+                y={top}
+                width={frontWidth}
+                height={frontWindowHeight}
+                fill="#22211e"
+                clip-path={`url(#${bodyClipId})`}
+              />
+
           
             {[...rangeMap(subway.windows, windowIndex => {
               const windowLeft = left + horizontalPadding + windowIndex * (windowWidth + windowGap);
@@ -156,7 +180,8 @@ function App() {
                   fill="none"
                   stroke={subway.color}
                   d={`M${windowLeft},${windowTop} h${windowWidth} v${windowHeight} h${-windowWidth} z`} 
-                  filter="url(#trainCarWindowBorder)" />
+                  filter="url(#trainCarWindowBorder)"
+                />
               </g>;
             })]}
 
@@ -206,7 +231,8 @@ function App() {
               strokeWidth={styles.route.strokeWidth}
               strokeLinejoin="round"
               fill="none"
-              stroke={subway.color} />
+              stroke={subway.color}
+            />
           </g>
         })}
       </g>
@@ -223,7 +249,8 @@ function App() {
             strokeWidth={styles.station.strokeWidth}
             className='station-circle'
             tabIndex={-1}
-            onClick={() => handleStationClick([x, y])} />;
+            onClick={() => handleStationClick([x, y])} 
+          />;
         })}
       </g>
     </svg>
