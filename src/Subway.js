@@ -175,8 +175,6 @@ function Subway({subway, styles, edgeNames}) {
             x={routeNameX}
             y={routeNameY}
             textLength={routeNameRadius}
-            fill='#FFF'
-            fontWeight='bold'
             textAnchor='middle'
             dominantBaseline='central'
           >{subway.name}</text>
@@ -199,7 +197,6 @@ function Subway({subway, styles, edgeNames}) {
               y={subseqBonusY}
               textLength={subseqBonusWidth - subseqBonusStrokeWidth}
               fill='#231F20'
-              fontWeight='bold'
               textAnchor='middle'
               dominantBaseline='central'
             >{subseqBonus}</text>
@@ -223,7 +220,6 @@ function Subway({subway, styles, edgeNames}) {
             y={initBonusY}
             textLength={Math.min(initBonusWidth, initBonusHeight) / 2 - initBonusStrokeWidth}
             fill='#231F20'
-            fontWeight='bold'
             textAnchor='middle'
             dominantBaseline='central'
           >{initBonus}</text>
