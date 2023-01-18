@@ -18,7 +18,6 @@ function Card(props) {
   
     const id = 'card';
     const clipId = `clip-${id}`;
-    const labelId = `label-${id}`;
     
     const iconRadius = width / 2 - textHeight - strokeWidth / 2 + iconOverlapText;
     
