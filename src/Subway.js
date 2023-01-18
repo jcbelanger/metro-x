@@ -1,3 +1,4 @@
+import './Subway.css';
 import { rangeMap, zip } from './utils';
 
 
@@ -163,7 +164,7 @@ function Subway({subway, styles, edgeNames}) {
 
     <g className='subway-status' key={subway.name}>
 
-      <g className='route-name' filter='url(#drop-shadow)'>
+      <g className='route-name' filter='url(#faint-drop-shadow)'>
         <title>Route Name</title>
         <circle 
           cx={routeNameX}
@@ -175,6 +176,7 @@ function Subway({subway, styles, edgeNames}) {
             x={routeNameX}
             y={routeNameY}
             textLength={routeNameRadius}
+            lengthAdjust="spacing"
             textAnchor='middle'
             dominantBaseline='central'
           >{subway.name}</text>
@@ -226,7 +228,7 @@ function Subway({subway, styles, edgeNames}) {
         </g>
       </g>
 
-      <g className='train-cart' filter='url(#drop-shadow)'>
+      <g className='train-cart' filter='url(#faint-drop-shadow)'>
 
         <g className='wheels'>
           {[...rangeMap(numWheels, wheelIndex => {

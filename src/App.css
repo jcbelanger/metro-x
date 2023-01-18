@@ -1,16 +1,24 @@
-
-.station-circle {
-	stroke: #b0b1b5;
-	fill: #ffffff;
+.skip-card .card-bg {
+    fill: #F6891F;
 }
 
-.route-name {
-	font-weight: 700;
-	font-size: 24px;
-	fill: #FFF;
+.transfer-card .card-bg {
+    fill: #686665;
 }
 
-.bonuses {
-	font-weight: 700;
-	font-size: 16;
+.reshuffle-card .card-bg {
+    fill: #009dde;
+}
+
+.number-card .card-bg {
+    fill: #009dde;
+}
+
+.reshuffle-card .card-label {
+    font-size: 22px;
+}
+
+.reshuffle-card .card-icon text {
+    text-decoration: underline;
+    font-size: 0.9em;
 }
