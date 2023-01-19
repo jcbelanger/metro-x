@@ -1,40 +1,76 @@
 import './App.css';
-import React, { useState, useLayoutEffect, useRef} from 'react';
+import React, { useRef, useReducer} from 'react';
 import metroCity from './metro-city.json';
 import Board from './Board';
 import CardMat from './CardMat';
+import useMatchMediaQuery from './MatchMedia';
+import { shuffle } from './utils';
 
 
 function App() {
-  const subways = Array.from(metroCity)
-
-  const landscapeMQ = 'only screen and (min-aspect-ratio: 2 / 1) and (max-height: 50rem)';
-  const isLandscapeDefault = window.matchMedia(landscapeMQ).matches;
-  const [isLandscape, setIsLandscape] = useState(isLandscapeDefault);
-  useLayoutEffect(() => {
-    const handleMQChange = (event) => setIsLandscape(event.matches);
-    const mql = window.matchMedia(landscapeMQ);
-    mql.addEventListener("change", handleMQChange);
-    return () => mql.removeEventListener("change", handleMQChange);
-  });
-
-  
   const deckRef = useRef();
-  const [numDrawn, setNumDrawn] = useState(0);
-  // const [canDraw, setCanDraw] = useState(true);
-  function handleDeckActivated() {
-    deckRef?.current?.blur();
-    setNumDrawn(prev => prev + 1);
+  const boardRef = useRef();
+
+  const initalState = {
+    subways: Array.from(metroCity),
+    cards: shuffle([
+      {type: 'number', value: 3},
+      {type: 'number', value: 3},
+      {type: 'number', value: 3},
+      {type: 'number', value: 4},
+      {type: 'number', value: 4},
+      {type: 'number', value: 4},
+      {type: 'number', value: 5},
+      {type: 'number', value: 5},
+      {type: 'reshuffle', label:'Re-Shuffle ↻', value: 6},
+      {type: 'free', label: 'Free', labelOffset: '30', value: '⭘'},
+      {type: 'transfer', label: 'Transfer', value: '✖'},
+      {type: 'transfer', label: 'Transfer', value: '✖'},
+      {type: 'skip', label: 'Skip', labelOffset: '30', value: 2},
+      {type: 'skip', label: 'Skip', labelOffset: '30', value: 2},
+      {type: 'skip', label: 'Skip', labelOffset: '30', value: 3}
+    ]),
+    numDrawn: 0,
+    drawDisabled: false
   };
 
+  const [state, dispatch] = useReducer((prevState, action) => {
+    switch (action.type) {
+      case 'draw_card':
+        const drawnIx = prevState.cards.length - prevState.numDrawn - 1;
+        const drawnCard = prevState.cards[drawnIx];
+        console.log(drawnCard);
+
+        boardRef?.current?.focus();
+        return {
+          ...prevState,
+          numDrawn: (prevState.numDrawn + 1) % (prevState.cards.length + 1),
+          // drawDisabled: true
+        };
+      default:
+        return { ...prevState};
+    }
+  }, initalState);
+
+  
+  function handleDeckDraw() {
+    dispatch({type: 'draw_card'});
+  };
+
+  const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 50rem)');
 
   return <div className='App'>
-    <Board subways={subways} />
+    <Board
+      ref={boardRef} 
+      subways={state.subways} 
+    />
     <CardMat
       ref={deckRef}
       landscape={!isLandscape}
-      numDrawn={numDrawn}
-      onDeckActivated={handleDeckActivated}
+      cards={state.cards}
+      numDrawn={state.numDrawn}
+      drawDisabled={state.drawDisabled}
+      onDeckDraw={handleDeckDraw}
     />
   </div>;
 }

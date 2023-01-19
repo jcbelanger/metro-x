@@ -6,8 +6,7 @@ import Subway from './Subway';
 import Station from './Station';
 import SvgDefsContext, { useDefIds } from './SvgDefsContext';
 
-
-function Board({subways}) {
+const Board = React.forwardRef(({subways}, rootRef) => {
   const styles = {
     spacing: 50,
     station: {
@@ -101,6 +100,7 @@ function Board({subways}) {
   const {id} = svgDefs;
   return <SvgDefsContext.Provider value={svgDefs}>
     <svg 
+        ref={rootRef}
         className='Board'
         version='1.1'
         baseProfile='full' 
@@ -163,6 +163,6 @@ function Board({subways}) {
 
     </svg>
   </SvgDefsContext.Provider>;
-}
+});
 
 export default Board;

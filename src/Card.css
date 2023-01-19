@@ -1,23 +1,23 @@
-.skip-card .card-bg {
+.skip-card[data-revealed='true'] .card-bg {
     fill: #F6891F;
 }
 
-.free-card .card-bg {
+.free-card[data-revealed='true'] .card-bg {
     fill: #007D71;
 }
 
-.transfer-card .card-bg {
+.transfer-card[data-revealed='true'] .card-bg {
     fill: #686665;
 }
 
-.reshuffle-card .card-bg {
+.reshuffle-card[data-revealed='true'] .card-bg {
     fill: #009dde;
 }
 
-.number-card .card-bg {
+.number-card[data-revealed='true'] .card-bg {
     fill: #009dde;
 }
 
-.reshuffle-card .card-label {
+.reshuffle-card[data-revealed='true'] .card-label {
     font-size: 22px;
 }

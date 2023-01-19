@@ -3,29 +3,28 @@ import React from 'react';
 import Card from './Card';
 import SvgDefsContext, { useDefIds } from './SvgDefsContext';
 
-const CardMat = React.forwardRef(({landscape=true, numDrawn=0, onDeckActivated}, ref) => {
-  const cards = [
-    {type: 'number', value: 3},
-    {type: 'number', value: 3},
-    {type: 'number', value: 3},
-    {type: 'number', value: 4},
-    {type: 'number', value: 4},
-    {type: 'number', value: 4},
-    {type: 'number', value: 5},
-    {type: 'number', value: 5},
-    {type: "reshuffle", label:"Re-Shuffle ↻", value: 6},
-    {type: "free", label: "Free", labelOffset: "30", value: "⭘"},
-    {type: "transfer", label: "Transfer", value: "✖"},
-    {type: "transfer", label: "Transfer", value: "✖"},
-    {type: "skip", label: "Skip", labelOffset: "30", value: 2},
-    {type: "skip", label: "Skip", labelOffset: "30", value: 2},
-    {type: "skip", label: "Skip", labelOffset: "30", value: 3}
-  ];
+const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, drawDisabled=false, onDeckDraw}, ref) => {
 
   function handleDeckKeyPressed(event) {
-    if (onDeckActivated && ["Enter", "Space"].indexOf(event.code) >= 0) {
-      onDeckActivated(event);
+    if (['Enter', 'Space'].indexOf(event.code) < 0) {
+      return;
     }
+    event.preventDefault();
+    if (drawDisabled) {
+      return;
+    }
+    onDeckDraw?.(event);
+  }
+
+  function handleDeckClick(event) {
+    if (drawDisabled) {
+      return;
+    }
+    event.preventDefault();
+    if (drawDisabled) {
+      return;
+    }
+    onDeckDraw?.(event);
   }
 
   const majorAxis = landscape ? 0 : 1;
@@ -74,25 +73,53 @@ const CardMat = React.forwardRef(({landscape=true, numDrawn=0, onDeckActivated},
         </filter>
       </defs>
 
-      <g ref={ref} onClick={onDeckActivated} tabIndex="0" onKeyDown={handleDeckKeyPressed}>
-        {cards.slice(0, cards.length - numDrawn).map((card, ix) => {
-          return <Card
+      <g
+        className='deck'
+        ref={ref}
+        onClick={handleDeckClick}
+        onKeyDown={handleDeckKeyPressed}
+        tabIndex={drawDisabled ? undefined : 0}
+        role='button'
+        aria-disabled={drawDisabled}
+        aria-label='Draw next card'
+      >
+        <title>Draw next card</title>
+        <g className='deck-bottom'>
+          <circle 
+            cx={deckPos.x + cardDims.width / 2}
+            cy={deckPos.y + cardDims.height / 2}
+            r={Math.min(cardDims.width, cardDims.height) / 2}
+            fill={drawDisabled ? '#677275' : '#43a047'}
+          />
+          <text  
+            x={deckPos.x + cardDims.width / 2}
+            y={deckPos.y + cardDims.height / 2}
+            fontWeight={700}
+            textAnchor='middle'
+            dominantBaseline='central'
+            fill='#fff'
+            fontSize={Math.min(cardDims.width, cardDims.height) / 2}
+          >{drawDisabled ? '✖' : '✓'}</text>
+
+        </g>
+        {cards.slice(0, cards.length - numDrawn).map((card, ix) => (
+          <Card
             key={ix}
             revealed={false}
             shadow={true}
-            x={deckPos.x + deckOffset.x*ix}
-            y={deckPos.y + deckOffset.y*ix}
+            x={deckPos.x + deckOffset.x * ix}
+            y={deckPos.y + deckOffset.y * ix}
             {...cardDims}
             {...card} 
-          />;
-        })}
+          />
+        ))}
       </g>
 
       <g>
         {cards.slice(cards.length - numDrawn, cards.length).reverse().map((card, ix) => {
           return <Card
             key={ix}
-            revealed={false}
+            revealed={true}
             shadow={true}
             x={activePos.x + deckOffset.x*ix}
             y={activePos.y + deckOffset.y*ix}

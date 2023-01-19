@@ -1,19 +1,10 @@
-function rangeMap(n, fn) {
-    let i = 0;
-    return {
-        [Symbol.iterator]() {
-            return {
-                next: () => {
-                    const result = {
-                        value: fn(i),
-                        done: i >= n
-                    };
-                    i++;
-                    return result;
-                }
-            }
-        }
-    };
+function shuffle(input) {
+    const output = [...input];
+    for (let i = input.length - 1; i >= 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [output[i], output[j]] = [output[j], output[i]]
+    }
+    return output;
 }
 
 function zip(...iterables) {
@@ -27,6 +18,24 @@ function zip(...iterables) {
                         value: results.map(result => result.value),
                         done: results.some(result => result.done)
                     };
+                }
+            }
+        }
+    };
+}
+  
+function rangeMap(n, fn) {
+    let i = 0;
+    return {
+        [Symbol.iterator]() {
+            return {
+                next: () => {
+                    const result = {
+                        value: fn(i),
+                        done: i >= n
+                    };
+                    i++;
+                    return result;
                 }
             }
         }
@@ -46,7 +55,8 @@ function comparator(...keys) {
 }
 
 export {
+    shuffle,
+    zip,
     rangeMap,
-    zip, 
     comparator
 };
