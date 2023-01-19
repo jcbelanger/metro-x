@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useRef} from 'react';
 import metroCity from './metro-city.json';
 import Board from './Board';
 import CardMat from './CardMat';
@@ -16,12 +16,26 @@ function App() {
     const mql = window.matchMedia(landscapeMQ);
     mql.addEventListener("change", handleMQChange);
     return () => mql.removeEventListener("change", handleMQChange);
-  })
+  });
+
+  
+  const deckRef = useRef();
+  const [numDrawn, setNumDrawn] = useState(0);
+  // const [canDraw, setCanDraw] = useState(true);
+  function handleDeckActivated() {
+    deckRef?.current?.blur();
+    setNumDrawn(prev => prev + 1);
+  };
 
 
   return <div className='App'>
     <Board subways={subways} />
-    <CardMat landscape={!isLandscape} />
+    <CardMat
+      ref={deckRef}
+      landscape={!isLandscape}
+      numDrawn={numDrawn}
+      onDeckActivated={handleDeckActivated}
+    />
   </div>;
 }
 

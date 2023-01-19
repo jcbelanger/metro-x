@@ -3,10 +3,7 @@ import React from 'react';
 import Card from './Card';
 import SvgDefsContext, { useDefIds } from './SvgDefsContext';
 
-function CardDeck({landscape}) {
-  const [left, top, width, height] = [0, 0, 400, 400]
-  const viewBox = [left, top, width, height];
-
+const CardMat = React.forwardRef(({landscape=true, numDrawn=0, onDeckActivated}, ref) => {
   const cards = [
     {type: 'number', value: 3},
     {type: 'number', value: 3},
@@ -24,6 +21,35 @@ function CardDeck({landscape}) {
     {type: "skip", label: "Skip", labelOffset: "30", value: 2},
     {type: "skip", label: "Skip", labelOffset: "30", value: 3}
   ];
+
+  function handleDeckKeyPressed(event) {
+    if (onDeckActivated && ["Enter", "Space"].indexOf(event.code) >= 0) {
+      onDeckActivated(event);
+    }
+  }
+
+  const majorAxis = landscape ? 0 : 1;
+  const minorAxis = 1 - majorAxis;
+  const [majorPos, minorPos] = [majorAxis, minorAxis].map(axis => ['x', 'y'][axis]);
+  // eslint-disable-next-line no-unused-vars
+  const [majorLen, minorLen] = [majorAxis, minorAxis].map(axis => ['width', 'height'][axis]);
+
+  const cardDims = {width: 225, height:350};
+  const gap = 50;
+
+  const deckOffset = {x: 2, y: 1}
+  const maxNumOffsets = Math.max(0, cards.length - 1);
+  const maxDeckOffset = Object.fromEntries(Object.entries(deckOffset).map(([k, v]) => [k, v * maxNumOffsets]));
+
+  const viewPad = 30;
+  const shadowPad = 30;
+  const viewBox = [-viewPad, -viewPad, cardDims.width + viewPad + shadowPad, cardDims.height + viewPad + shadowPad];
+  viewBox[2 + majorAxis] += maxDeckOffset[majorPos] + cardDims[majorLen] + gap;
+  viewBox[2 + minorAxis] += maxDeckOffset[minorPos];
+
+  const deckPos = {x:0, y:0};
+  const activePos = {...deckPos};
+  activePos[majorPos] = activePos[majorPos] + maxDeckOffset[majorPos] + cardDims[majorLen] + gap;
 
   const svgDefs = useDefIds(['heavy-drop-shadow']);
   const {id} = svgDefs;
@@ -48,18 +74,36 @@ function CardDeck({landscape}) {
         </filter>
       </defs>
 
-      {cards.map((card, ix) => (
-        <Card
-          key={[card.type, card.value]} 
-          viewBox={ landscape 
-            ? [left + (cards.length / 2 - ix) * 50 - 225/2, top, width, height]
-            : [left, top + (cards.length / 2 - ix) * 20 - 350/2, width, height]
-          } 
-          {...card} 
-        />
-      ))}
+      <g ref={ref} onClick={onDeckActivated} tabIndex="0" onKeyDown={handleDeckKeyPressed}>
+        {cards.slice(0, cards.length - numDrawn).map((card, ix) => {
+          return <Card
+            key={ix}
+            revealed={false}
+            shadow={true}
+            x={deckPos.x + deckOffset.x*ix}
+            y={deckPos.y + deckOffset.y*ix}
+            {...cardDims}
+            {...card} 
+          />;
+        })}
+      </g>
+
+      <g>
+        {cards.slice(cards.length - numDrawn, cards.length).reverse().map((card, ix) => {
+          return <Card
+            key={ix}
+            revealed={false}
+            shadow={true}
+            x={activePos.x + deckOffset.x*ix}
+            y={activePos.y + deckOffset.y*ix}
+            {...cardDims}
+            {...card} 
+          />;
+        })}
+      </g>
+
     </svg>
   </SvgDefsContext.Provider>;
-}
+});
 
-export default CardDeck;
+export default CardMat;
