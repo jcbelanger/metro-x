@@ -2,6 +2,7 @@
     font-family: futura-lt;
     font-style: normal;
     font-weight: 400;
+    font-display: fallback;
     src:local('Futura LT'), url(./fonts/futura-lt/FuturaLT.ttf) format('truetype');
 }
 
@@ -18,5 +19,6 @@
     font-family: futura-lt;
     font-style: normal;
     font-weight: 700;
+    font-display: fallback;
     src:local('Futura LT'), url(./fonts/futura-lt/FuturaLT-Bold.ttf) format('truetype');
 }
