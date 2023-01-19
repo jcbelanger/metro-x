@@ -9,11 +9,21 @@ function CardDeck({landscape}) {
   const viewBox = [left, top, width, height];
 
   const cards = [
-    ...Array.from(rangeMap(5, i => ({type: 'number', value: i + 1}) )),
+    {type: 'number', value: 3},
+    {type: 'number', value: 3},
+    {type: 'number', value: 3},
+    {type: 'number', value: 4},
+    {type: 'number', value: 4},
+    {type: 'number', value: 4},
+    {type: 'number', value: 5},
+    {type: 'number', value: 5},
     {type: "reshuffle", label:"Re-Shuffle ↻", value: 6},
     {type: "free", label: "Free", labelOffset: "30", value: "⭘"},
     {type: "transfer", label: "Transfer", value: "✖"},
-    {type: "skip", label: "Skip", labelOffset: "30", value: "2"}
+    {type: "transfer", label: "Transfer", value: "✖"},
+    {type: "skip", label: "Skip", labelOffset: "30", value: 2},
+    {type: "skip", label: "Skip", labelOffset: "30", value: 2},
+    {type: "skip", label: "Skip", labelOffset: "30", value: 3}
   ];
 
   const svgDefs = useDefIds(['heavy-drop-shadow']);
@@ -43,8 +53,8 @@ function CardDeck({landscape}) {
         <Card
           key={[card.type, card.value]} 
           viewBox={ landscape 
-            ? [left + (cards.length / 2 - ix) * 225 - 225/2, top, width, height]
-            : [left, top + (cards.length / 2 - ix) * 350 - 350/2, width, height]
+            ? [left + (cards.length / 2 - ix) * 50 - 225/2, top, width, height]
+            : [left, top + (cards.length / 2 - ix) * 20 - 350/2, width, height]
           } 
           {...card} 
         />

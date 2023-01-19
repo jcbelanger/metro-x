@@ -7,11 +7,10 @@ function Card(props) {
     const {
       viewBox: [viewLeft, viewTop, viewWidth, viewHeight],
       label,
-      labelOffset,
       value,
       type
     } = props;
-    const [width, height] = [225, 350];
+    const [width, height] = [225, 325];
     const left = viewLeft + viewWidth / 2 - width / 2;
     const top = viewTop + viewHeight / 2 - height / 2;
     const strokeWidth = 10;
@@ -22,6 +21,7 @@ function Card(props) {
     const clipId = id + '-clip';
     
     const iconRadius = width / 2 - textHeight - strokeWidth / 2 + iconOverlapText;
+    const labelOffset = ['skip', 'free'].indexOf(type) >= 0 ? 30 : 0;
     
     return <SvgDefsContext.Consumer>{ ({url}) => (
       <g 
@@ -64,7 +64,7 @@ function Card(props) {
                   <text 
                       className="card-label"
                       y={textHeight / 2 + strokeWidth / 2}
-                      x={-strokeWidth - (labelOffset ?? 0)}
+                      x={-strokeWidth - labelOffset}
                       fontSize={textHeight * .7}
                       fontWeight={700}
                       transform="rotate(-90)"
