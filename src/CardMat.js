@@ -2,7 +2,6 @@ import './CardMat.css';
 import React from 'react';
 import Card from './Card';
 import SvgDefsContext, { useDefIds } from './SvgDefsContext';
-import {rangeMap} from './utils';
 
 function CardDeck({landscape}) {
   const [left, top, width, height] = [0, 0, 400, 400]
