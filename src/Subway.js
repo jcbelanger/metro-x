@@ -1,6 +1,6 @@
 import './Subway.css';
 import { rangeMap, zip } from './utils';
-
+import SvgDefsContext from './SvgDefsContext';
 
 function Subway({subway, styles, edgeNames}) {
   const {
@@ -137,185 +137,184 @@ function Subway({subway, styles, edgeNames}) {
 
   const [routeNameX, routeNameY] = [trainCarX - 2 * spacing, trainCarY]
 
-  return <g className='subway' key={subway.name}>
-    <g>
-      <title>Subway Route: {subway.name}</title>
-      <polyline
-        className='route'
-        points={routePoints}
-        strokeWidth={routeStrokeWidth}
-        strokeLinejoin='round'
-        strokeLinecap='round'
-        fill='none'
-        stroke={subway.color}
-      />
-    </g>
-
-    <path
-      className='under-track' 
-      d={`
-        M${underTrackLeft},${underTrackY}
-        h${underTrackLength}
-      `}
-      stroke='#9aa2a5'
-      strokeWidth={underTrackWidth}
-      strokeDasharray={underTrackDashes}
-    />
-
-    <g className='subway-status' key={subway.name}>
-
-      <g className='route-name' filter='url(#faint-drop-shadow)'>
-        <title>Route Name</title>
-        <circle 
-          cx={routeNameX}
-          cy={routeNameY}
-          r={routeNameRadius}
-          fill={subway.color}
-        />
-        <text 
-            x={routeNameX}
-            y={routeNameY}
-            textLength={routeNameRadius}
-            lengthAdjust="spacing"
-            textAnchor='middle'
-            dominantBaseline='central'
-          >{subway.name}</text>
-      </g>
-
-      <g className='bonuses'>
-        <g className='subsequent-bonus'>
-          <title>Subsequent Completion Bonus: {subway.name}</title>
-          <rect 
-            x={subseqBonusX - subseqBonusWidth / 2}
-            y={subseqBonusY - subseqBonusHeight / 2}
-            width={subseqBonusWidth}
-            height={subseqBonusHeight}
-            fill='#FFF'
-            stroke='#BDBEC0'
-            strokeWidth={subseqBonusStrokeWidth}
+  return <SvgDefsContext.Consumer>{ ({url}) => (
+    <g className='subway' key={subway.name}>
+        <g>
+          <title>Subway Route: {subway.name}</title>
+          <polyline
+            className='route'
+            points={routePoints}
+            strokeWidth={routeStrokeWidth}
+            strokeLinejoin='round'
+            strokeLinecap='round'
+            fill='none'
+            stroke={subway.color}
           />
-          <text 
-              x={subseqBonusX}
-              y={subseqBonusY}
-              textLength={subseqBonusWidth - subseqBonusStrokeWidth}
-              fill='#231F20'
-              textAnchor='middle'
-              dominantBaseline='central'
-            >{subseqBonus}</text>
-        </g>
-        <g className='initial-bonus'>
-          <title>Initial Completion Bonus: {subway.name}</title>
-          <path 
-            d={`
-              M${initBonusX},${initBonusY - initBonusHeight / 2}
-              l${initBonusWidth / 2},${initBonusHeight / 2}
-              l${-initBonusWidth / 2},${initBonusHeight / 2}
-              l${-initBonusWidth / 2},${-initBonusHeight / 2}
-              z
-            `}
-            fill='#FFD501'
-            stroke='#E88D3C'
-            strokeWidth={initBonusStrokeWidth}
-          />
-          <text 
-            x={initBonusX}
-            y={initBonusY}
-            textLength={Math.min(initBonusWidth, initBonusHeight) / 2 - initBonusStrokeWidth}
-            fill='#231F20'
-            textAnchor='middle'
-            dominantBaseline='central'
-          >{initBonus}</text>
-        </g>
-      </g>
-
-      <g className='train-cart' filter='url(#faint-drop-shadow)'>
-
-        <g className='wheels'>
-          {[...rangeMap(numWheels, wheelIndex => {
-            const wheelsWidth = trainCarWidth - 2 * wheelsMargin - 2 * wheelRadius;
-            const wheelStep = wheelsWidth / (numWheels - 1);
-            const wheelCx = left + wheelsMargin + wheelRadius + wheelIndex * wheelStep;
-            const wheelCy = top + trainCarHeight;
-            return <circle
-              key={wheelIndex}
-              className='wheel'
-              cx={wheelCx}
-              cy={wheelCy}
-              r={wheelRadius}
-              fill='#22211e'
-            />;
-          })]}
         </g>
 
-        <path 
-          className='train-cart-body'
-          filter='url(#lighting)'
-          id={bodyId}
-          fill={subway.color}
-          d={`
-            M${left},${top}
-            m${0},${trainCarPadY}
-            a${trainCarPadX},${trainCarPadY} 0 0,1 ${trainCarPadX},${-trainCarPadY}
-            h${trainCarWidth - 2 * trainCarPadX - frontCornerX}
-            a${trainCarPadX + frontCornerX},${trainCarPadY + frontCornerY} 0 0,1 ${trainCarPadX + frontCornerX},${trainCarPadY + frontCornerY}
-            v${trainCarHeight - frontCornerY - trainCarPadY}
-            h${-trainCarWidth}
-            z
-          `}
+        <path
+          className='under-track' 
+          d={`M${underTrackLeft},${underTrackY} h${underTrackLength}`}
+          stroke='#9aa2a5'
+          strokeWidth={underTrackWidth}
+          strokeDasharray={underTrackDashes}
         />
 
-        <clipPath id={bodyClipId}>
-          <use href={`#${bodyId}`} />
-        </clipPath>
+        <g className='subway-status' key={subway.name}>
 
-        <g className='front'>
-          <circle 
-            className='front-light'
-            cx={frontLightCx}
-            cy={frontLightCy}
-            r={frontLightRadius}
-            fill='#22211e'
-          />
+          <g className='route-name' filter={url('faint-drop-shadow')}>
+            <title>Route Name</title>
+            <circle 
+              cx={routeNameX}
+              cy={routeNameY}
+              r={routeNameRadius}
+              fill={subway.color}
+            />
+            <text 
+                x={routeNameX}
+                y={routeNameY}
+                textLength={routeNameRadius}
+                lengthAdjust="spacing"
+                textAnchor='middle'
+                dominantBaseline='central'
+              >{subway.name}</text>
+          </g>
 
-          <rect 
-            className='front-window'
-            x={frontWindowLeft}
-            y={top}
-            width={frontWidth}
-            height={frontWindowHeight}
-            fill='#22211e'
-            clipPath={`url(#${bodyClipId})`}
-          />
-        </g>
-
-        <g className='windows'>
-          {[...rangeMap(subway.windows, windowIndex => {
-            const windowLeft = left + trainCarPadX + windowIndex * (windowWidth + windowGap);
-            const windowTop = top + trainCarPadY;
-            return <g className='window' key={windowIndex}>
-              <rect
-                className='window-fill'
-                x={windowLeft}
-                y={windowTop}
-                width={windowWidth}
-                height={windowHeight}
-                fill='#ffffff'
+          <g className='bonuses'>
+            <g className='subsequent-bonus'>
+              <title>Subsequent Completion Bonus: {subway.name}</title>
+              <rect 
+                x={subseqBonusX - subseqBonusWidth / 2}
+                y={subseqBonusY - subseqBonusHeight / 2}
+                width={subseqBonusWidth}
+                height={subseqBonusHeight}
+                fill='#FFF'
+                stroke='#BDBEC0'
+                strokeWidth={subseqBonusStrokeWidth}
               />
+              <text 
+                  x={subseqBonusX}
+                  y={subseqBonusY}
+                  textLength={subseqBonusWidth - subseqBonusStrokeWidth}
+                  fill='#231F20'
+                  textAnchor='middle'
+                  dominantBaseline='central'
+                >{subseqBonus}</text>
+            </g>
+            <g className='initial-bonus'>
+              <title>Initial Completion Bonus: {subway.name}</title>
               <path 
-                className='window-border'
-                strokeWidth={windowBorder}
-                strokeLinejoin='round'
-                fill='none'
-                stroke={subway.color}
-                d={`M${windowLeft},${windowTop} h${windowWidth} v${windowHeight} h${-windowWidth} z`} 
-                filter='url(#lighten)'
+                d={`
+                  M${initBonusX},${initBonusY - initBonusHeight / 2}
+                  l${initBonusWidth / 2},${initBonusHeight / 2}
+                  l${-initBonusWidth / 2},${initBonusHeight / 2}
+                  l${-initBonusWidth / 2},${-initBonusHeight / 2}
+                  z
+                `}
+                fill='#FFD501'
+                stroke='#E88D3C'
+                strokeWidth={initBonusStrokeWidth}
               />
-            </g>;
-          })]}
+              <text 
+                x={initBonusX}
+                y={initBonusY}
+                textLength={Math.min(initBonusWidth, initBonusHeight) / 2 - initBonusStrokeWidth}
+                fill='#231F20'
+                textAnchor='middle'
+                dominantBaseline='central'
+              >{initBonus}</text>
+            </g>
+          </g>
+
+          <g className='train-cart' filter={url('faint-drop-shadow')}>
+
+            <g className='wheels'>
+              {[...rangeMap(numWheels, wheelIndex => {
+                const wheelsWidth = trainCarWidth - 2 * wheelsMargin - 2 * wheelRadius;
+                const wheelStep = wheelsWidth / (numWheels - 1);
+                const wheelCx = left + wheelsMargin + wheelRadius + wheelIndex * wheelStep;
+                const wheelCy = top + trainCarHeight;
+                return <circle
+                  key={wheelIndex}
+                  className='wheel'
+                  cx={wheelCx}
+                  cy={wheelCy}
+                  r={wheelRadius}
+                  fill='#22211e'
+                />;
+              })]}
+            </g>
+
+            <path 
+              className='train-cart-body'
+              filter={url('lighting')}
+              id={bodyId}
+              fill={subway.color}
+              d={`
+                M${left},${top}
+                m${0},${trainCarPadY}
+                a${trainCarPadX},${trainCarPadY} 0 0,1 ${trainCarPadX},${-trainCarPadY}
+                h${trainCarWidth - 2 * trainCarPadX - frontCornerX}
+                a${trainCarPadX + frontCornerX},${trainCarPadY + frontCornerY} 0 0,1 ${trainCarPadX + frontCornerX},${trainCarPadY + frontCornerY}
+                v${trainCarHeight - frontCornerY - trainCarPadY}
+                h${-trainCarWidth}
+                z
+              `}
+            />
+
+            <clipPath id={bodyClipId}>
+              <use href={`#${bodyId}`} />
+            </clipPath>
+
+            <g className='front'>
+              <circle 
+                className='front-light'
+                cx={frontLightCx}
+                cy={frontLightCy}
+                r={frontLightRadius}
+                fill='#22211e'
+              />
+
+              <rect 
+                className='front-window'
+                x={frontWindowLeft}
+                y={top}
+                width={frontWidth}
+                height={frontWindowHeight}
+                fill='#22211e'
+                clipPath={`url(#${bodyClipId})`}
+              />
+            </g>
+
+            <g className='windows'>
+              {[...rangeMap(subway.windows, windowIndex => {
+                const windowLeft = left + trainCarPadX + windowIndex * (windowWidth + windowGap);
+                const windowTop = top + trainCarPadY;
+                return <g className='window' key={windowIndex}>
+                  <rect
+                    className='window-fill'
+                    x={windowLeft}
+                    y={windowTop}
+                    width={windowWidth}
+                    height={windowHeight}
+                    fill='#ffffff'
+                  />
+                  <path 
+                    className='window-border'
+                    strokeWidth={windowBorder}
+                    filter={url('lighten')}
+                    strokeLinejoin='round'
+                    fill='none'
+                    stroke={subway.color}
+                    d={`M${windowLeft},${windowTop} h${windowWidth} v${windowHeight} h${-windowWidth} z`} 
+                  />
+                </g>;
+              })]}
+            </g>
+          </g>
         </g>
       </g>
-    </g>
-  </g>;
+  )}</SvgDefsContext.Consumer>;
 }
 
 export default Subway;

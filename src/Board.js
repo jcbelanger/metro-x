@@ -4,6 +4,7 @@ import { zip } from './utils';
 import NestedMap from './nested';
 import Subway from './Subway';
 import Station from './Station';
+import SvgDefsContext, { useDefIds } from './SvgDefsContext';
 
 
 function Board({subways}) {
@@ -96,7 +97,9 @@ function Board({subways}) {
   const [left, top] = [minX, minY].map(r => r * styles.spacing - padding);
   const viewBox = [left, top, right - left, bottom - top];
 
-  return (
+  const svgDefs = useDefIds(['faint-drop-shadow', 'lighten', 'lighting']);
+  const {id} = svgDefs;
+  return <SvgDefsContext.Provider value={svgDefs}>
     <svg 
         className='Board'
         version='1.1'
@@ -107,8 +110,7 @@ function Board({subways}) {
         xmlns='http://www.w3.org/2000/svg'
     >
       <defs>
-
-        <filter id='faint-drop-shadow' x='-20%' y='-20%' width='140%' height='140%'>
+        <filter id={id('faint-drop-shadow')} x='-20%' y='-20%' width='140%' height='140%'>
           <feGaussianBlur in='SourceAlpha' stdDeviation='3'/>
           <feOffset dx='4' dy='2' />
           <feComponentTransfer>
@@ -117,16 +119,7 @@ function Board({subways}) {
           <feBlend in='SourceGraphic' />
         </filter>
 
-        <filter id='heavy-drop-shadow' x='-20%' y='-20%' width='140%' height='140%'>
-          <feGaussianBlur in='SourceAlpha' stdDeviation='5'/>
-          <feOffset dx='4' dy='2' />
-          <feComponentTransfer>
-            <feFuncA type='linear' slope='0.8'/>
-          </feComponentTransfer>
-          <feBlend in='SourceGraphic' />
-        </filter>
-
-        <filter id='lighten'>
+        <filter id={id('lighten')}>
           <feComponentTransfer>
             <feFuncR type='linear' slope='1.6' />
             <feFuncG type='linear' slope='1.6' />
@@ -134,15 +127,14 @@ function Board({subways}) {
           </feComponentTransfer>
         </filter>
 
-        <filter id='lighting'>
+        <filter id={id('lighting')}>
           <feGaussianBlur in='SourceAlpha' stdDeviation='5' result='blur1'/>
-          <feSpecularLighting result='specOut' in='blur1' specularConstant='1.8' specularExponent='48' lightingColor='#ccc'>
+          <feSpecularLighting result='specOut' in='blur1' specularConstant='1.8' specularExponent='49' lightingColor='#ccc'>
             <feDistantLight azimuth='225' elevation='45'/>
           </feSpecularLighting>
           <feComposite in='SourceGraphic' in2='specOut' operator='arithmetic' k1='0' k2='1' k3='1' k4='0' result='result'/>
           <feComposite operator='atop' in2='SourceGraphic'/>
         </filter>
-
       </defs>
 
       <g className='subways'>
@@ -170,7 +162,7 @@ function Board({subways}) {
       </g>
 
     </svg>
-  );
+  </SvgDefsContext.Provider>;
 }
 
 export default Board;
