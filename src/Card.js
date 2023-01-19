@@ -12,7 +12,6 @@ function Card(props) {
       label,
       value,
       type,
-      revealed,
       shadow
     } = props;
 
