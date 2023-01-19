@@ -2,15 +2,19 @@ import './CardMat.css';
 import React from 'react';
 import Card from './Card';
 import SvgDefsContext, { useDefIds } from './SvgDefsContext';
+import {rangeMap} from './utils';
 
-
-function CardDeck({orientation}) {
+function CardDeck({landscape}) {
   const [left, top, width, height] = [0, 0, 400, 400]
   const viewBox = [left, top, width, height];
 
-  // const cards = [
-  //   {type: "reshuffle", label:"Re-Shuffle ↻", value: 6}
-  // ];
+  const cards = [
+    ...Array.from(rangeMap(5, i => ({type: 'number', value: i + 1}) )),
+    {type: "reshuffle", label:"Re-Shuffle ↻", value: 6},
+    {type: "free", label: "Free", labelOffset: "30", value: "⭘"},
+    {type: "transfer", label: "Transfer", value: "✖"},
+    {type: "skip", label: "Skip", labelOffset: "30", value: "2"}
+  ];
 
   const svgDefs = useDefIds(['heavy-drop-shadow']);
   const {id} = svgDefs;
@@ -34,11 +38,17 @@ function CardDeck({orientation}) {
           <feBlend in='SourceGraphic' />
         </filter>
       </defs>
-      {/* <Card viewBox={viewBox} type="reshuffle" label="Re-Shuffle ↻" value="6" /> */}
-      {/* <Card viewBox={viewBox} type="number" value="4" /> */}
-      {/* <Card viewBox={viewBox} type="free" label="Free" labelOffset="30" value="⭘" /> */}
-      {/* <Card viewBox={viewBox} type="transfer" label="Transfer" value="✖" /> */}
-      <Card viewBox={viewBox} type="skip" label="Skip" labelOffset="30" value="2" />
+
+      {cards.map((card, ix) => (
+        <Card
+          key={[card.type, card.value]} 
+          viewBox={ landscape 
+            ? [left + (cards.length / 2 - ix) * 225 - 225/2, top, width, height]
+            : [left, top + (cards.length / 2 - ix) * 350 - 350/2, width, height]
+          } 
+          {...card} 
+        />
+      ))}
     </svg>
   </SvgDefsContext.Provider>;
 }
