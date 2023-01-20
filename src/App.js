@@ -58,7 +58,7 @@ function App() {
         const prevIx = prevState.cards.length - prevState.numDrawn;
         const {type: prevType, value: prevValue} = prevIx < prevState.cards.length ? prevState.cards[prevIx] : {};
 
-        const stateChanges = Object.create(null);
+        const stateChanges = {};
         switch (prevType) {
           case "number":
           case "skip":
@@ -84,6 +84,8 @@ function App() {
         const nextState = {
           ...prevState,
           ...stateChanges,
+          selectedStation: undefined,
+          selectedSubway: undefined,
           subwaySelectDisabled: true,
           stationSelectDisabled: true,
           cardDrawDisabled: true
