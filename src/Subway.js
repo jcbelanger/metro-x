@@ -247,7 +247,6 @@ function Subway({subway, styles, edgeNames}) {
 
             <path 
               className='train-cart-body'
-              filter={url('lighting')}
               id={bodyId}
               fill={subway.color}
               d={`

@@ -126,15 +126,6 @@ const Board = React.forwardRef(({subways}, rootRef) => {
             <feFuncB type='linear' slope='1.6' />
           </feComponentTransfer>
         </filter>
-
-        <filter id={id('lighting')}>
-          <feGaussianBlur in='SourceAlpha' stdDeviation='5' result='blur1'/>
-          <feSpecularLighting result='specOut' in='blur1' specularConstant='1.8' specularExponent='49' lightingColor='#ccc'>
-            <feDistantLight azimuth='225' elevation='45'/>
-          </feSpecularLighting>
-          <feComposite in='SourceGraphic' in2='specOut' operator='arithmetic' k1='0' k2='1' k3='1' k4='0' result='result'/>
-          <feComposite operator='atop' in2='SourceGraphic'/>
-        </filter>
       </defs>
 
       <g className='subways'>
