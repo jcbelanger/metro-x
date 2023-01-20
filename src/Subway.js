@@ -1,8 +1,9 @@
 import './Subway.css';
 import { rangeMap, zip } from './utils';
 import SvgDefsContext from './SvgDefsContext';
+import {ariaButton} from './Aria';
 
-function Subway({subway, styles, edgeNames}) {
+function Subway({subway, styles, edgeNames, disabled=true, onClick}) {
   const {
     spacing,
     route: {
@@ -52,6 +53,7 @@ function Subway({subway, styles, edgeNames}) {
         radius: wheelRadius
       },
       underTrack: {
+        enabled: underTrackEnabled = false,
         margin: underTrackMargin,
         strokeWidth: underTrackWidth,
         dashes: underTrackDashes
@@ -138,7 +140,14 @@ function Subway({subway, styles, edgeNames}) {
   const [routeNameX, routeNameY] = [trainCarX - 2 * spacing, trainCarY]
 
   return <SvgDefsContext.Consumer>{ ({url}) => (
-    <g className='subway' key={subway.name}>
+    <g 
+      className='subway'
+      key={subway.name}
+      {...ariaButton({
+        disabled: disabled, 
+        onClick: onClick
+      })}
+    >
         <g>
           <title>Subway Route: {subway.name}</title>
           <polyline
@@ -152,13 +161,16 @@ function Subway({subway, styles, edgeNames}) {
           />
         </g>
 
-        <path
-          className='under-track' 
-          d={`M${underTrackLeft},${underTrackY} h${underTrackLength}`}
-          stroke='#9aa2a5'
-          strokeWidth={underTrackWidth}
-          strokeDasharray={underTrackDashes}
-        />
+        {underTrackEnabled 
+          ? <path
+            className='under-track' 
+            d={`M${underTrackLeft},${underTrackY} h${underTrackLength}`}
+            stroke='#9aa2a5'
+            strokeWidth={underTrackWidth}
+            strokeDasharray={underTrackDashes}
+          />
+          : undefined
+        }
 
         <g className='subway-status' key={subway.name}>
 

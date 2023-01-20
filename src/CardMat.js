@@ -2,31 +2,9 @@ import './CardMat.css';
 import React from 'react';
 import Card from './Card';
 import SvgDefsContext, { useDefIds } from './SvgDefsContext';
+import {ariaButton} from './Aria';
 
-const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, drawDisabled=false, onDeckDraw}, ref) => {
-
-  function handleDeckKeyPressed(event) {
-    if (['Enter', 'Space'].indexOf(event.code) < 0) {
-      return;
-    }
-    event.preventDefault();
-    if (drawDisabled) {
-      return;
-    }
-    onDeckDraw?.(event);
-  }
-
-  function handleDeckClick(event) {
-    if (drawDisabled) {
-      return;
-    }
-    event.preventDefault();
-    if (drawDisabled) {
-      return;
-    }
-    onDeckDraw?.(event);
-  }
-
+const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDrawDisabled=false, onDeckDraw}, ref) => {
   const majorAxis = landscape ? 0 : 1;
   const minorAxis = 1 - majorAxis;
   const [majorPos, minorPos] = [majorAxis, minorAxis].map(axis => ['x', 'y'][axis]);
@@ -51,7 +29,7 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, drawDis
   activePos[majorPos] = activePos[majorPos] + maxDeckOffset[majorPos] + cardDims[majorLen] + gap;
 
   const svgDefs = useDefIds(['heavy-drop-shadow']);
-  const {id} = svgDefs;
+  const {id, url} = svgDefs;
   return <SvgDefsContext.Provider value={svgDefs}>
     <svg 
         className='CardMat'
@@ -76,20 +54,20 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, drawDis
       <g
         className='deck'
         ref={ref}
-        onClick={handleDeckClick}
-        onKeyDown={handleDeckKeyPressed}
-        tabIndex={drawDisabled ? undefined : 0}
-        role='button'
-        aria-disabled={drawDisabled}
         aria-label='Draw next card'
+        {...ariaButton({
+          disabled: cardDrawDisabled, 
+          onClick: event => onDeckDraw?.(event)
+        })}
       >
         <title>Draw next card</title>
-        <g className='deck-bottom'>
+
+        <g className='deck-bottom' filter={url('heavy-drop-shadow')}>
           <circle 
             cx={deckPos.x + cardDims.width / 2}
             cy={deckPos.y + cardDims.height / 2}
             r={Math.min(cardDims.width, cardDims.height) / 2}
-            fill={drawDisabled ? '#677275' : '#43a047'}
+            fill={cardDrawDisabled ? '#677275' : '#43a047'}
           />
           <text  
             x={deckPos.x + cardDims.width / 2}
@@ -99,14 +77,13 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, drawDis
             dominantBaseline='central'
             fill='#fff'
             fontSize={Math.min(cardDims.width, cardDims.height) / 2}
-          >{drawDisabled ? '✖' : '✓'}</text>
+          >{cardDrawDisabled ? '✖' : '✓'}</text>
 
         </g>
         {cards.slice(0, cards.length - numDrawn).map((card, ix) => (
           <Card
             key={ix}
             revealed={false}
-            shadow={true}
             x={deckPos.x + deckOffset.x * ix}
             y={deckPos.y + deckOffset.y * ix}
             {...cardDims}
@@ -120,7 +97,6 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, drawDis
           return <Card
             key={ix}
             revealed={true}
-            shadow={true}
             x={activePos.x + deckOffset.x*ix}
             y={activePos.y + deckOffset.y*ix}
             {...cardDims}

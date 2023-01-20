@@ -31,45 +31,123 @@ function App() {
       {type: 'skip', label: 'Skip', labelOffset: '30', value: 3}
     ]),
     numDrawn: 0,
-    drawDisabled: false
+    selectedSubway: undefined,
+    selectedStation: undefined,
+    cardDrawDisabled: false,
+    subwaySelectDisabled: true,
+    stationSelectDisabled: true
   };
 
   const [state, dispatch] = useReducer((prevState, action) => {
     switch (action.type) {
-      case 'draw_card':
-        const drawnIx = prevState.cards.length - prevState.numDrawn - 1;
-        const drawnCard = prevState.cards[drawnIx];
-        console.log(drawnCard);
-
-        boardRef?.current?.focus();
+      case 'select_subway':
+        console.log(`Selected subway ${action.name}`);
         return {
           ...prevState,
-          numDrawn: (prevState.numDrawn + 1) % (prevState.cards.length + 1),
-          // drawDisabled: true
+          selectedSubway: action.name,
+          cardDrawDisabled: false
         };
+      case 'select_station':
+        console.log(`Selected station ${action.position}`);
+        return {
+          ...prevState,
+          selectedStation: action.position,
+          cardDrawDisabled: false
+        };
+      case 'draw_card':
+        const prevIx = prevState.cards.length - prevState.numDrawn;
+        const {type: prevType, value: prevValue} = prevIx < prevState.cards.length ? prevState.cards[prevIx] : {};
+
+        const stateChanges = Object.create(null);
+        switch (prevType) {
+          case "number":
+          case "skip":
+            stateChanges.numDrawn = prevState.numDrawn + 1;
+            console.log(`Apply ${prevType} ${prevValue} on ${prevState.selectedSubway}`);
+            break;
+          case "reshuffle":
+            stateChanges.cards = shuffle(prevState.cards);
+            stateChanges.numDrawn = 1;
+            console.log(`Apply ${prevType} ${prevValue} on ${prevState.selectedSubway}`);
+            break;
+          case "transfer":
+          case "free":
+            stateChanges.numDrawn = prevState.numDrawn + 1;
+            console.log(`Apply ${prevType} ${prevValue} on ${prevState.selectedStation}`)
+            break;
+          default:
+            console.log(`First card`)
+            stateChanges.numDrawn = prevState.numDrawn + 1;
+            break;
+        }
+        
+        const nextState = {
+          ...prevState,
+          ...stateChanges,
+          subwaySelectDisabled: true,
+          stationSelectDisabled: true,
+          cardDrawDisabled: true
+        };
+
+        const nextIx = nextState.cards.length - nextState.numDrawn;
+        const {type: nextType } = nextIx < nextState.cards.length ? nextState.cards[nextIx] : {};
+
+        switch (nextType) {
+          case "number":
+          case "skip":
+          case "reshuffle":
+          case "transfer":
+            nextState.subwaySelectDisabled = false;
+            break;
+          case "free":
+            nextState.stationSelectDisabled = false;
+            break;
+          default:
+            nextState.cardDrawDisabled = false;
+            break;
+        }
+
+        deckRef?.current?.blur();
+        boardRef?.current?.focus();
+
+        return nextState;
       default:
         return { ...prevState};
     }
   }, initalState);
-
   
-  function handleDeckDraw() {
-    dispatch({type: 'draw_card'});
+  function handleDeckDraw(event) {
+    event.preventDefault();
+    dispatch({ type: 'draw_card' });
   };
+
+  function handleStationSelect(position, event) {
+    event.preventDefault();
+    dispatch({type: 'select_station', position});
+  }
+
+  function handleSubwaySelect(name, event) {
+    event.preventDefault();
+    dispatch({type: 'select_subway', name});
+  }
 
   const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 50rem)');
 
   return <div className='App'>
     <Board
       ref={boardRef} 
-      subways={state.subways} 
+      subways={state.subways}
+      subwaySelectDisabled={state.subwaySelectDisabled}
+      stationSelectDisabled={state.stationSelectDisabled}
+      onStationClick={handleStationSelect}
+      onSubwayClick={handleSubwaySelect}
     />
     <CardMat
       ref={deckRef}
       landscape={!isLandscape}
       cards={state.cards}
       numDrawn={state.numDrawn}
-      drawDisabled={state.drawDisabled}
+      cardDrawDisabled={state.cardDrawDisabled}
       onDeckDraw={handleDeckDraw}
     />
   </div>;

@@ -6,63 +6,64 @@ import Subway from './Subway';
 import Station from './Station';
 import SvgDefsContext, { useDefIds } from './SvgDefsContext';
 
-const Board = React.forwardRef(({subways}, rootRef) => {
-  const styles = {
-    spacing: 50,
-    station: {
-      radius: 15,
-      strokeWidth: 4
+const styles = {
+  spacing: 50,
+  station: {
+    radius: 15,
+    strokeWidth: 4
+  },
+  route: {
+    strokeWidth: 8,
+    edgeGap: 2
+  },
+  routeName: {
+    radius: 20
+  },
+  completionBonus: {
+    initial: {
+      width: 24,
+      height: 30,
+      strokeWidth: 1,
+      dx: -8,
+      dy: -5
     },
-    route: {
-      strokeWidth: 8,
-      edgeGap: 2
-    },
-    routeName: {
-      radius: 20
-    },
-    completionBonus: {
-      initial: {
-        width: 24,
-        height: 30,
-        strokeWidth: 1,
-        dx: -8,
-        dy: -5
-      },
-      subsequent: {
-        width: 18,
-        height: 20,
-        strokeWidth: 2,
-        dx: 5,
-        dy: 8
-      }
-    },
-    trainCar: {
-      paddingX: 9,
-      paddingY: 6,
-      front: {
-        cornerX: 8,
-        cornerY: 15,
-        width: 8,
-        lightRadius: 2.5
-      },
-      window: {
-        gap: 8,
-        width: 27,
-        height: 27,
-        border: 2
-      },
-      wheels: {
-        margin: 7,
-        radius: 8
-      },
-      underTrack: {
-        strokeWidth: 4,
-        margin: 2,
-        dashes: 1
-      }
+    subsequent: {
+      width: 18,
+      height: 20,
+      strokeWidth: 2,
+      dx: 5,
+      dy: 8
     }
-  };
+  },
+  trainCar: {
+    paddingX: 9,
+    paddingY: 6,
+    front: {
+      cornerX: 8,
+      cornerY: 15,
+      width: 8,
+      lightRadius: 2.5
+    },
+    window: {
+      gap: 8,
+      width: 27,
+      height: 27,
+      border: 2
+    },
+    wheels: {
+      margin: 7,
+      radius: 8
+    },
+    underTrack: {
+      strokeWidth: 4,
+      margin: 2,
+      dashes: 1
+    }
+  }
+};
 
+const Board = React.forwardRef(({subways, subwaySelectDisabled=true, stationSelectDisabled=true, onStationClick, onSubwayClick}, rootRef) => {
+  
   const stationRefs = new NestedMap();
   for (const subway of subways) {
     for (const xy of subway.route) {
@@ -77,11 +78,6 @@ const Board = React.forwardRef(({subways}, rootRef) => {
       const key = edge.flat();
       edgeNames.set(key, prev => prev.add(subway.name), () => new Set([subway.name]));
     }
-  }
-
-  function handleStationClick(position) {
-    const stationRef = stationRefs.get(position);
-    stationRef?.current?.focus();
   }
 
   const padding = 30;
@@ -114,7 +110,7 @@ const Board = React.forwardRef(({subways}, rootRef) => {
           <feGaussianBlur in='SourceAlpha' stdDeviation='3'/>
           <feOffset dx='4' dy='2' />
           <feComponentTransfer>
-            <feFuncA type='linear' slope='0.2'/>
+            <feFuncA type='linear' slope='0.4'/>
           </feComponentTransfer>
           <feBlend in='SourceGraphic' />
         </filter>
@@ -135,6 +131,8 @@ const Board = React.forwardRef(({subways}, rootRef) => {
             styles={styles}
             subway={subway}
             edgeNames={edgeNames}
+            disabled={subwaySelectDisabled}
+            onClick={(event) => onSubwayClick?.(subway.name, event)}
           />
         )}
       </g>
@@ -147,7 +145,8 @@ const Board = React.forwardRef(({subways}, rootRef) => {
             position={position}
             styles={styles}
             subways={subways}
-            onClick={handleStationClick}
+            disabled={stationSelectDisabled}
+            onClick={(event) => onStationClick?.(position, event)}
           />
         )}
       </g>

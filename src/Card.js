@@ -12,8 +12,7 @@ function Card(props) {
       label,
       value,
       type,
-      revealed,
-      shadow
+      revealed
     } = props;
 
     const strokeWidth = 10;
@@ -163,7 +162,7 @@ function Card(props) {
       <g 
         className={`card ${type}-card`}
         transform={`translate(${x}, ${y})`}
-        filter={shadow ? url('heavy-drop-shadow') : undefined}
+        filter={url('heavy-drop-shadow')}
         data-revealed={revealed}
       >
         <rect 
