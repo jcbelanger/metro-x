@@ -54,8 +54,8 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDra
       <g
         className='deck'
         ref={ref}
-        aria-label='Draw next card'
         {...ariaButton({
+          label: 'Draw next card',
           disabled: cardDrawDisabled, 
           onClick: event => onDeckDraw?.(event)
         })}

@@ -142,12 +142,13 @@ function Subway({subway, styles, edgeNames, disabled=true, onClick}) {
   return <SvgDefsContext.Consumer>{ ({url}) => (
     <g 
       className='subway'
-      key={subway.name}
       {...ariaButton({
+        label: `Subway ${subway.name}`,
         disabled: disabled, 
         onClick: onClick
       })}
     >
+        <title>{`Subway ${subway.name}`}</title>
         <g>
           <title>Subway Route: {subway.name}</title>
           <polyline
@@ -172,7 +173,7 @@ function Subway({subway, styles, edgeNames, disabled=true, onClick}) {
           : undefined
         }
 
-        <g className='subway-status' key={subway.name}>
+        <g className='subway-status'>
 
           <g className='route-name' filter={url('faint-drop-shadow')}>
             <title>Route Name</title>

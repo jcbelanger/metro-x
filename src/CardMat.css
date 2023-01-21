@@ -1,0 +1,11 @@
+.deck {
+    user-select: none;
+    outline: none;
+}
+
+.deck[aria-disabled='false'] {
+    cursor: pointer;
+}
+.deck[aria-disabled='true'] {
+    cursor: not-allowed;
+}

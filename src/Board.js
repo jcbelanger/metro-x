@@ -1,5 +1,5 @@
 import './Board.css';
-import React from 'react';
+import React, { useImperativeHandle, useRef } from 'react';
 import { zip } from './utils';
 import NestedMap from './nested';
 import Subway from './Subway';
@@ -62,7 +62,25 @@ const styles = {
   }
 };
 
-const Board = React.forwardRef(({subways, subwaySelectDisabled=true, stationSelectDisabled=true, onStationClick, onSubwayClick}, rootRef) => {
+const Board = React.forwardRef(({
+  subways, 
+  selectedSubway,
+  selectedStation,
+  freeStations,
+  subwayValues, 
+  subwaySelectDisabled=true, 
+  stationSelectDisabled=true, 
+  onStationClick, 
+  onSubwayClick
+}, ref) => {
+
+  const subwaysRef = useRef();
+  const stationsRef = useRef();
+  
+  useImperativeHandle(ref, () => ({
+    subways: () => subwaysRef.current,
+    stations: () => stationsRef.current
+  }));
   
   const stationRefs = new NestedMap();
   for (const subway of subways) {
@@ -96,7 +114,6 @@ const Board = React.forwardRef(({subways, subwaySelectDisabled=true, stationSele
   const {id} = svgDefs;
   return <SvgDefsContext.Provider value={svgDefs}>
     <svg 
-        ref={rootRef}
         className='Board'
         version='1.1'
         baseProfile='full' 
@@ -106,6 +123,26 @@ const Board = React.forwardRef(({subways, subwaySelectDisabled=true, stationSele
         xmlns='http://www.w3.org/2000/svg'
     >
       <defs>
+
+        <filter id="subway-hover" x="-100%" y="-100%" width="300%" height="300%">
+            <feBlend in="SourceGraphic" mode="hard-light" />
+        </filter>
+
+        <filter id="subway-label-hover" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur result="blurOut" in="offOut" stdDeviation="6" />
+          <feBlend in="SourceGraphic" in2="blurOut" mode="hard-light" />
+        </filter>
+
+        <animate 
+          href="#subway-label-hover"
+          id="asdf" 
+          attributeName="stdDeviation"
+          from="0"
+          to="6"
+          dur="1s"
+          fill="freeze"
+        />
+
         <filter id={id('faint-drop-shadow')} x='-20%' y='-20%' width='140%' height='140%'>
           <feGaussianBlur in='SourceAlpha' stdDeviation='3'/>
           <feOffset dx='4' dy='2' />
@@ -124,20 +161,33 @@ const Board = React.forwardRef(({subways, subwaySelectDisabled=true, stationSele
         </filter>
       </defs>
 
-      <g className='subways'>
+      <g 
+        ref={subwaysRef}
+        tabIndex={-1}
+        className='subways'
+        role='radiogroup'
+      >
+        <title>Subway Select</title>
         {subways.map(subway => 
           <Subway 
             key={subway.name}
             styles={styles}
             subway={subway}
             edgeNames={edgeNames}
-            disabled={subwaySelectDisabled}
+            checked={selectedSubway === subway.name}
+            disabled={subwaySelectDisabled} //|| (subwayValues[subway.name]?.length ?? 0) < subway.windows
             onClick={(event) => onSubwayClick?.(subway.name, event)}
           />
         )}
       </g>
 
-      <g className='stations'>
+      <g
+        ref={stationsRef}
+        tabIndex={-1}
+        className='stations'
+        role='radiogroup'
+      >
+        <title>Station Select</title>
         {Array.from(stationRefs, ([position, ref]) => 
           <Station 
             key={position}

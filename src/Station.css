@@ -2,3 +2,10 @@
 	stroke: #b0b1b5;
 	fill: #ffffff;
 }
+
+.station[aria-disabled='false'] {
+    cursor: pointer;
+}
+.station[aria-disabled='true'] {
+    cursor: not-allowed;
+}

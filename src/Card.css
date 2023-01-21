@@ -1,3 +1,7 @@
+.card text {
+    user-select: none;
+}
+
 .skip-card[data-revealed='true'] .card-bg {
     fill: #F6891F;
 }

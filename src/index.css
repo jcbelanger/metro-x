@@ -34,29 +34,17 @@ body {
   z-index:-1;
 }
 
-@media (prefers-reduced-motion) {
-  .bg {
-    animation: none;
-  }
-  
-  .bg2 {
-    transform: translateX(-25%);
-    animation-delay: -20s;
-  }
-
-  .bg3 {
-    transform: translateX(25%);
-    animation-delay: -200s;
-  }
-}
-
 .bg2 {
-  animation-direction: alternate-reverse;
+  transform: translateX(-25%);
   animation-duration: 130;
+  animation-delay: -160s;
+  animation-direction: alternate-reverse;
 }
 
 .bg3 {
+  transform: translateX(25%);
   animation-duration: 90s;
+  animation-delay: -70s;
 }
 
 @keyframes slide {
@@ -65,5 +53,11 @@ body {
   }
   100% {
     transform: translateX(25%);
+  }
+}
+
+@media (prefers-reduced-motion) {
+  .bg {
+    animation: none;
   }
 }

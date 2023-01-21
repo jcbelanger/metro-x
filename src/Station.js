@@ -10,8 +10,8 @@ const Station = React.forwardRef(({subways, position, styles, onClick, disabled=
     <g
       className='station'
       filter={url('faint-drop-shadow')}
-      aria-label={`Select Station ${position[0]}, ${position[1]}`}
       {...ariaButton({
+        label: `Select Station ${position[0]}, ${position[1]}`,
         disabled: disabled, 
         onClick: onClick
       })}

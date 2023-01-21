@@ -1,4 +1,4 @@
-function ariaButton({disabled=false, onClick}) {
+function ariaButton({label, disabled=false, onClick}) {
     function handleKeyPressed(event) {
         if (['Enter', 'Space'].indexOf(event.code) >= 0) {
             handleClick(event);
@@ -13,11 +13,12 @@ function ariaButton({disabled=false, onClick}) {
     }
 
     return {
-      onClick: handleClick,
-      onKeyDown: handleKeyPressed,
-      tabIndex: disabled ? undefined : 0,
       role: 'button',
-      'aria-disabled': disabled
+    //   'aria-lablel': label,
+      'aria-disabled': disabled,
+      tabIndex: disabled ? undefined : 0,
+      onClick: handleClick,
+      onKeyDown: handleKeyPressed
     }
 };
 

@@ -1,3 +1,23 @@
+.subway {
+	outline: none;
+}
+.subway[aria-disabled='false'] {
+    cursor: pointer;
+}
+.subway[aria-disabled='true'] {
+    cursor: not-allowed;
+}
+
+.subway[aria-disabled='false']:hover .route-name,
+.subway[aria-disabled='false']:focus .route-name {
+	filter: url(#subway-label-hover), url(#subway-hover);
+}
+.subway[aria-disabled='false']:hover .subway-status,
+.subway[aria-disabled='false']:focus .subway-status {
+	filter: url(#subway-label-hover);
+}
+
+
 .route-name {
 	font-weight: 700;
 	font-size: 24px;
@@ -9,3 +29,10 @@
 	font-size: 16px;
 }
 
+
+.route-name text,
+.initial-bonus text,
+.subsequent-bonus text
+.window text {
+	user-select: none;
+}

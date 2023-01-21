@@ -1,0 +1,5 @@
+.subways,
+.stations {
+    user-select: none;
+    outline: none;
+}
