@@ -11,10 +11,12 @@ function App() {
   const deckRef = useRef();
   const boardRef = useRef();
 
+  const subways = Array.from(metroCity);
+
   const initalState = {
-    subways: Array.from(metroCity),
+    subways,
     freeStations: [],
-    subwayValues: {},
+    subwayValues: Object.fromEntries(subways.map(subway => [subway.name, []])),
     cards: shuffle([
       {type: 'number', value: 3},
       {type: 'number', value: 3},
@@ -58,11 +60,9 @@ function App() {
           cardDrawDisabled: false
         };
       case 'draw_card':
-        const prevSelectValues = prevState.subwayValues[prevState.selectedSubway] || [];
-
-      
         const nextState = {
           ...prevState,
+          subwayValues: {...prevState.subwayValues},
           selectedStation: undefined,
           selectedSubway: undefined,
           subwaySelectDisabled: true,
@@ -72,20 +72,20 @@ function App() {
 
         switch (prevType) {
           case "number":
-            nextState.subwayValues[prevState.selectedStation] = [...prevSelectValues, prevValue];
+            nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
             break; 
           case "skip":
-            nextState.subwayValues[prevState.selectedStation] = [...prevSelectValues, prevValue];
+            nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
             break;
           case "reshuffle":
-            nextState.subwayValues[prevState.selectedStation] = [...prevSelectValues, prevValue];
+            nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
             nextState.cards = shuffle(prevState.cards);
             nextState.numDrawn = 1;
             break;
           case "transfer":
-            nextState.subwayValues[prevState.selectedStation] = [...prevSelectValues, prevValue];
+            nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
             break;
           case "free":

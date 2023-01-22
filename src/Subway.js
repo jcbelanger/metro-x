@@ -3,7 +3,14 @@ import { rangeMap, zip } from './utils';
 import SvgDefsContext from './SvgDefsContext';
 import {ariaButton} from './Aria';
 
-function Subway({subway, styles, edgeNames, disabled=true, onClick}) {
+function Subway({
+  subway, 
+  values, 
+  edgeNames, 
+  styles, 
+  onClick, 
+  disabled=true
+}) {
   const {
     spacing,
     route: {
@@ -143,7 +150,6 @@ function Subway({subway, styles, edgeNames, disabled=true, onClick}) {
     <g 
       className='subway'
       {...ariaButton({
-        label: `Subway ${subway.name}`,
         disabled: disabled, 
         onClick: onClick
       })}
@@ -162,21 +168,18 @@ function Subway({subway, styles, edgeNames, disabled=true, onClick}) {
           />
         </g>
 
-        {underTrackEnabled 
-          ? <path
-            className='under-track' 
-            d={`M${underTrackLeft},${underTrackY} h${underTrackLength}`}
-            stroke='#9aa2a5'
-            strokeWidth={underTrackWidth}
-            strokeDasharray={underTrackDashes}
-          />
-          : undefined
-        }
+        {underTrackEnabled && <path
+          className='under-track' 
+          d={`M${underTrackLeft},${underTrackY} h${underTrackLength}`}
+          stroke='#9aa2a5'
+          strokeWidth={underTrackWidth}
+          strokeDasharray={underTrackDashes}
+        />}
 
         <g className='subway-status'>
 
           <g className='route-name' filter={url('faint-drop-shadow')}>
-            <title>Route Name</title>
+            <title>Subway {subway.name}</title>
             <circle 
               cx={routeNameX}
               cy={routeNameY}
@@ -302,7 +305,8 @@ function Subway({subway, styles, edgeNames, disabled=true, onClick}) {
               {[...rangeMap(subway.windows, windowIndex => {
                 const windowLeft = left + trainCarPadX + windowIndex * (windowWidth + windowGap);
                 const windowTop = top + trainCarPadY;
-                return <g className='window' key={windowIndex}>
+                const windowValue = values?.[windowIndex];
+                return <g className='window' key={[windowIndex, windowValue]}>
                   <rect
                     className='window-fill'
                     x={windowLeft}
@@ -320,6 +324,15 @@ function Subway({subway, styles, edgeNames, disabled=true, onClick}) {
                     stroke={subway.color}
                     d={`M${windowLeft},${windowTop} h${windowWidth} v${windowHeight} h${-windowWidth} z`} 
                   />
+                        
+                  {windowValue !== undefined && <text 
+                    x={windowLeft + windowWidth / 2}
+                    y={windowTop + windowHeight / 2}
+                    textLength={windowWidth}
+                    lengthAdjust="spacing"
+                    textAnchor='middle'
+                    dominantBaseline='central'
+                  >{windowValue}</text>}
                 </g>;
               })]}
             </g>

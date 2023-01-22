@@ -4,18 +4,18 @@ import SvgDefsContext from './SvgDefsContext';
 import {ariaButton} from './Aria';
 
 
-const Station = React.forwardRef(({subways, position, styles, onClick, disabled=true}, ref) => {
-  const [cx, cy] = position.map(r => r * styles.spacing);
+const Station = React.forwardRef(({subways, position:[x, y], styles, onClick, disabled=true}, ref) => {
+  const [cx, cy] = [x, y].map(r => r * styles.spacing);
   return <SvgDefsContext.Consumer>{({url}) => (
     <g
       className='station'
       filter={url('faint-drop-shadow')}
       {...ariaButton({
-        label: `Select Station ${position[0]}, ${position[1]}`,
         disabled: disabled, 
         onClick: onClick
       })}
     >
+      <title>{`Station (${x}, ${y})`}</title>
       <circle
         ref={ref}
         className='station-circle'

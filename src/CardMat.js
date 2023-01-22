@@ -55,7 +55,6 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDra
         className='deck'
         ref={ref}
         {...ariaButton({
-          label: 'Draw next card',
           disabled: cardDrawDisabled, 
           onClick: event => onDeckDraw?.(event)
         })}

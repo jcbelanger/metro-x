@@ -163,7 +163,7 @@ const Board = React.forwardRef(({
 
       <g 
         ref={subwaysRef}
-        tabIndex={-1}
+        // tabIndex={-1}
         className='subways'
         role='radiogroup'
       >
@@ -173,6 +173,7 @@ const Board = React.forwardRef(({
             key={subway.name}
             styles={styles}
             subway={subway}
+            values={subwayValues?.[subway.name]}
             edgeNames={edgeNames}
             checked={selectedSubway === subway.name}
             disabled={subwaySelectDisabled} //|| (subwayValues[subway.name]?.length ?? 0) < subway.windows
@@ -183,7 +184,7 @@ const Board = React.forwardRef(({
 
       <g
         ref={stationsRef}
-        tabIndex={-1}
+        // tabIndex={-1}
         className='stations'
         role='radiogroup'
       >
