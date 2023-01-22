@@ -1,3 +1,13 @@
+function* takeWhile(iterable, predicate) {
+    for (const value of iterable) {
+        if (predicate(value)) {
+            yield value;
+        } else {
+            return;
+        }
+    }
+}
+
 function shuffle(input) {
     const output = [...input];
     for (let i = input.length - 1; i >= 0; i--) {
@@ -24,22 +34,10 @@ function zip(...iterables) {
     };
 }
   
-function rangeMap(n, fn) {
-    let i = 0;
-    return {
-        [Symbol.iterator]() {
-            return {
-                next: () => {
-                    const result = {
-                        value: fn(i),
-                        done: i >= n
-                    };
-                    i++;
-                    return result;
-                }
-            }
-        }
-    };
+function* rangeMap(n, fn) {
+    for (let i = 0; i < n; i++) {
+        yield fn(i);
+    }
 }
 
 function comparator(...keys) {
@@ -55,6 +53,7 @@ function comparator(...keys) {
 }
 
 export {
+    takeWhile,
     shuffle,
     zip,
     rangeMap,

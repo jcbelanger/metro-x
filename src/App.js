@@ -4,7 +4,7 @@ import metroCity from './metro-city.json';
 import Board from './Board';
 import CardMat from './CardMat';
 import useMatchMediaQuery from './MatchMedia';
-import { shuffle } from './utils';
+import { shuffle, takeWhile } from './utils';
 
 
 function App() {
@@ -44,9 +44,6 @@ function App() {
   };
 
   const [state, dispatch] = useReducer((prevState, action) => {
-    const prevIx = prevState.cards.length - prevState.numDrawn;
-    const {type: prevType, value: prevValue} = prevIx < prevState.cards.length ? prevState.cards[prevIx] : {};
-
     switch (action.type) {
       case 'select_subway':
         return {
@@ -54,13 +51,22 @@ function App() {
           selectedSubway: action.name,
           cardDrawDisabled: false
         };
+
       case 'select_station':
         return {
           ...prevState,
           selectedStation: action.position,
           cardDrawDisabled: false
         };
+
       case 'draw_card':
+        const prevIx = prevState.cards.length - prevState.numDrawn;
+        const {type: prevType, value: prevValue} = prevIx < prevState.cards.length ? prevState.cards[prevIx] : {};
+
+        const wasStationFree = ([x, y]) => prevState.checkedStations.findIndex(([a, b]) => a === x && b === y) < 0;
+        const prevSubway = subways.find(subway => subway.name === prevState.selectedSubway);
+        const prevFreeIx = prevSubway?.route?.findIndex(wasStationFree) ?? 0;
+        
         const nextState = {
           ...prevState,
           subwayValues: {...prevState.subwayValues},
@@ -75,19 +81,28 @@ function App() {
           case "number":
             nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
+            const newChecksNumber = takeWhile(prevSubway.route.slice(prevFreeIx, prevFreeIx + prevValue), wasStationFree);
+            nextState.checkedStations = [...prevState.checkedStations, ...newChecksNumber];
             break; 
           case "skip":
             nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
+            const newChecksSkip = prevSubway.route.slice(prevFreeIx, prevFreeIx + prevValue).filter(wasStationFree);
+            nextState.checkedStations = [...prevState.checkedStations, ...newChecksSkip];
             break;
           case "reshuffle":
             nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
             nextState.cards = shuffle(prevState.cards);
             nextState.numDrawn = 1;
+            const newChecksReshuffle = takeWhile(prevSubway.route.slice(prevFreeIx, prevFreeIx + prevValue), wasStationFree);
+            nextState.checkedStations = [...prevState.checkedStations, ...newChecksReshuffle];
             break;
           case "transfer":
             nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
+            const newChecksTransfer = Array.from(takeWhile(prevSubway.route.slice(prevFreeIx, prevFreeIx + 1), wasStationFree));
+            nextState.checkedStations = [...prevState.checkedStations, ...newChecksTransfer];
+            nextState.transferStations = [...prevState.transferStations, ...newChecksTransfer];
             break;
           case "free":
             nextState.checkedStations = [...prevState.checkedStations, prevState.selectedStation];
