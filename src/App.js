@@ -100,18 +100,18 @@ function App() {
         const nextIx = nextState.cards.length - nextState.numDrawn;
         const {type: nextType } = nextIx < nextState.cards.length ? nextState.cards[nextIx] : {};
 
-        deckRef.current?.blur();
+        // deckRef.current?.blur();
         switch (nextType) {
           case "number":
           case "skip":
           case "reshuffle":
           case "transfer":
             nextState.subwaySelectDisabled = false;
-            boardRef.current?.subways()?.focus();
+            // boardRef.current?.subways()?.focus();
             break;
           case "free":
             nextState.stationSelectDisabled = false;
-            boardRef.current?.stations()?.focus();
+            // boardRef.current?.stations()?.focus();
             break;
           default:
             break;

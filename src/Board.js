@@ -176,7 +176,7 @@ const Board = React.forwardRef(({
             values={subwayValues?.[subway.name]}
             edgeNames={edgeNames}
             checked={selectedSubway === subway.name}
-            disabled={subwaySelectDisabled} //|| (subwayValues[subway.name]?.length ?? 0) < subway.windows
+            disabled={subwaySelectDisabled || (subwayValues?.[subway.name]?.length ?? 0) >= subway.windows}
             onClick={(event) => onSubwayClick?.(subway.name, event)}
           />
         )}
