@@ -65,8 +65,8 @@ const styles = {
 const Board = React.forwardRef(({
   subways, 
   selectedSubway,
-  selectedStation,
-  freeStations,
+  transferStations,
+  checkedStations,
   subwayValues, 
   subwaySelectDisabled=true, 
   stationSelectDisabled=true, 
@@ -76,6 +76,14 @@ const Board = React.forwardRef(({
 
   const subwaysRef = useRef();
   const stationsRef = useRef();
+
+  const stationValues = new NestedMap();
+  for (const checkedStation of checkedStations) {
+    stationValues.set(checkedStation, prev => prev, () => 'checked');
+  }
+  for (const transferStation of transferStations) {
+    stationValues.set(transferStation, prev => 'transfer', () => 'transfer');
+  }
   
   useImperativeHandle(ref, () => ({
     subways: () => subwaysRef.current,
@@ -114,13 +122,13 @@ const Board = React.forwardRef(({
   const {id} = svgDefs;
   return <SvgDefsContext.Provider value={svgDefs}>
     <svg 
-        className='Board'
-        version='1.1'
-        baseProfile='full' 
-        width='100%'
-        height='100%'
-        viewBox={viewBox} 
-        xmlns='http://www.w3.org/2000/svg'
+      className='Board'
+      version='1.1'
+      baseProfile='full' 
+      width='100%'
+      height='100%'
+      viewBox={viewBox} 
+      xmlns='http://www.w3.org/2000/svg'
     >
       <defs>
 
@@ -138,7 +146,7 @@ const Board = React.forwardRef(({
           id="asdf" 
           attributeName="stdDeviation"
           from="0"
-          to="6"
+          to="10"
           dur="1s"
           fill="freeze"
         />
@@ -170,7 +178,7 @@ const Board = React.forwardRef(({
         <title>Subway Select</title>
         {subways.map(subway => 
           <Subway 
-            key={subway.name}
+            key={[subway.name, ...(subwayValues?.[subway.name] ?? [])]}
             styles={styles}
             subway={subway}
             values={subwayValues?.[subway.name]}
@@ -189,17 +197,20 @@ const Board = React.forwardRef(({
         role='radiogroup'
       >
         <title>Station Select</title>
-        {Array.from(stationRefs, ([position, ref]) => 
-          <Station 
-            key={position}
+        {Array.from(stationRefs, ([position, ref]) => {
+          const stationValue = stationValues.get(position);
+          return <Station 
+            key={[...position, stationValue]}
             ref={ref}
             position={position}
+            checked={stationValue !== undefined}
+            transfer={stationValue === 'transfer'}
             styles={styles}
             subways={subways}
-            disabled={stationSelectDisabled}
+            disabled={stationSelectDisabled || stationValue !== undefined}
             onClick={(event) => onStationClick?.(position, event)}
           />
-        )}
+        })}
       </g>
 
     </svg>

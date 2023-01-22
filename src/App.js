@@ -15,7 +15,8 @@ function App() {
 
   const initalState = {
     subways,
-    freeStations: [],
+    checkedStations: [],
+    transferStations: [],
     subwayValues: Object.fromEntries(subways.map(subway => [subway.name, []])),
     cards: shuffle([
       {type: 'number', value: 3},
@@ -89,7 +90,7 @@ function App() {
             nextState.numDrawn = prevState.numDrawn + 1;
             break;
           case "free":
-            nextState.freeStations = [...prevState.freeStations, prevState.selectedStation];
+            nextState.checkedStations = [...prevState.checkedStations, prevState.selectedStation];
             nextState.numDrawn = prevState.numDrawn + 1;
             break;
           default: //First card
@@ -144,7 +145,8 @@ function App() {
     <Board
       ref={boardRef} 
       subways={state.subways}
-      freeStations={state.freeStations}
+      checkedStations={state.checkedStations}
+      transferStations={state.transferStations}
       subwayValues={state.subwayValues}
       subwaySelectDisabled={state.subwaySelectDisabled}
       stationSelectDisabled={state.stationSelectDisabled}

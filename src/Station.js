@@ -1,21 +1,23 @@
 import './Station.css';
 import React from 'react';
 import SvgDefsContext from './SvgDefsContext';
-import {ariaButton} from './Aria';
+import {ariaCheckbox} from './Aria';
 
 
-const Station = React.forwardRef(({subways, position:[x, y], styles, onClick, disabled=true}, ref) => {
-  const [cx, cy] = [x, y].map(r => r * styles.spacing);
+const Station = React.forwardRef(({position:[x, y], styles, onClick, disabled=true, checked=false, transfer=false}, ref) => {
+  const [cx, cy] = [x, y].map(d => d * styles.spacing);
+
   return <SvgDefsContext.Consumer>{({url}) => (
     <g
-      className='station'
+      className={'station' + (transfer ? ' transfer' : '') }
       filter={url('faint-drop-shadow')}
-      {...ariaButton({
+      {...ariaCheckbox({
+        checked: checked,
         disabled: disabled, 
         onClick: onClick
       })}
     >
-      <title>{`Station (${x}, ${y})`}</title>
+      <title>{`Station (${x}, ${y})` + (transfer ? ' (transfer)' : '')}</title>
       <circle
         ref={ref}
         className='station-circle'
@@ -24,6 +26,13 @@ const Station = React.forwardRef(({subways, position:[x, y], styles, onClick, di
         r={styles.station.radius}
         strokeWidth={styles.station.strokeWidth}
       />
+      {transfer && <text 
+        x={cx}
+        y={cy}
+        textLength={2 * styles.station.radius}
+        textAnchor='middle'
+        dominantBaseline='central'
+      >✖</text>}
     </g>
   )}</SvgDefsContext.Consumer>
 });

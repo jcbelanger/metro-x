@@ -9,3 +9,7 @@
 .station[aria-disabled='true'] {
     cursor: not-allowed;
 }
+
+.station[aria-checked='true'] .station-circle {
+	fill: #b0b1b5; 
+}
