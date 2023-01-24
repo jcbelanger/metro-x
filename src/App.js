@@ -87,7 +87,7 @@ function App() {
           case "skip":
             nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
-            const newChecksSkip = prevSubway.route.slice(prevFreeIx, prevFreeIx + prevValue).filter(wasStationFree);
+            const newChecksSkip = prevSubway.route.slice(prevFreeIx, -1).filter(wasStationFree).slice(0, prevValue);
             nextState.checkedStations = [...prevState.checkedStations, ...newChecksSkip];
             break;
           case "reshuffle":
