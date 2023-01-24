@@ -65,7 +65,8 @@ const styles = {
 const Board = React.forwardRef(({
   subways, 
   selectedSubway,
-  transferStations,
+  checkedTransfers,
+  mixedTransfers,
   checkedStations,
   mixedStations,
   subwayWindows, 
@@ -82,14 +83,16 @@ const Board = React.forwardRef(({
   for (const checkedStation of checkedStations) {
     stationCheckValues.set(checkedStation, prev => prev, () => 'true');
   }
-  
   for (const mixedStation of mixedStations) {
     stationCheckValues.set(mixedStation, prev => 'mixed', () => 'mixed');
   }
 
   const transferSet = new NestedMap();
-  for (const transferStation of transferStations) {
-    transferSet.set(transferStation, prev => true, () => true);
+  for (const checkedTransfer of checkedTransfers) {
+    transferSet.set(checkedTransfer, prev => true, () => true);
+  }
+  for (const mixedTransfer of mixedTransfers) {
+    transferSet.set(mixedTransfer, prev => true, () => true);
   }
   
   useImperativeHandle(ref, () => ({
@@ -211,7 +214,7 @@ const Board = React.forwardRef(({
             ref={ref}
             position={position}
             checked={stationCheckValues.get(position)}
-            transfer={transferSet.has(position)}
+            transfer={transferSet.get(position)}
             styles={styles}
             subways={subways}
             disabled={stationSelectDisabled || checked === 'true'}

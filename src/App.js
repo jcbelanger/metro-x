@@ -17,7 +17,9 @@ function App() {
   const initalState = {
     subways,
     subwayWindows: {},
-    transferStations: [],
+    mixedWindows: {},
+    checkedTransfers: [],
+    mixedTransfers: [],
     checkedStations: [],
     mixedStations: [],
     selectedSubway: undefined,
@@ -67,12 +69,40 @@ function App() {
   }, initalState);
 
   
-  function selectSubway(prevState, action) {
-    return {
+  function selectSubway(prevState, action) {const prevIx = prevState.cards.length - prevState.numDrawn;
+    const {type: prevType, value: prevValue} = prevIx < prevState.cards.length ? prevState.cards[prevIx] : {};
+
+    const isStationFree = ([x, y]) => prevState.checkedStations.findIndex(([a, b]) => a === x && b === y) < 0;
+    const nextSubway = subways.find(subway => subway.name === action.name);
+    const nextFreeIx = nextSubway?.route?.findIndex(isStationFree) ?? 0;
+    
+    const nextState = {
       ...prevState,
       selectedSubway: action.name,
+      mixedTransfers: [],
+      mixedStations: [],
       cardDrawDisabled: false
     };
+
+    switch (prevType) {
+      case "number":
+        nextState.mixedStations = [...takeWhile(nextSubway.route.slice(nextFreeIx, nextFreeIx + prevValue), isStationFree)];
+        break; 
+      case "skip":
+        nextState.mixedStations = nextSubway.route.slice(nextFreeIx, -1).filter(isStationFree).slice(0, prevValue);
+        break;
+      case "reshuffle":
+        nextState.mixedStations = [...takeWhile(nextSubway.route.slice(nextFreeIx, nextFreeIx + prevValue), isStationFree)];
+        break;
+      case "transfer":
+        nextState.mixedStations = [...takeWhile(nextSubway.route.slice(nextFreeIx, nextFreeIx + 1), isStationFree)];
+        nextState.mixedTransfers = nextState.mixedStations;
+        break;
+      default:
+        break;
+    }
+    
+    return nextState;
   }
 
   function selectStation(prevState, action) {
@@ -87,76 +117,37 @@ function App() {
   function drawCard(prevState, action) {
     const prevIx = prevState.cards.length - prevState.numDrawn;
     const {type: prevType, value: prevValue} = prevIx < prevState.cards.length ? prevState.cards[prevIx] : {};
-
-    const wasStationFree = ([x, y]) => prevState.checkedStations.findIndex(([a, b]) => a === x && b === y) < 0;
-    const prevSubway = subways.find(subway => subway.name === prevState.selectedSubway);
-    const prevFreeIx = prevSubway?.route?.findIndex(wasStationFree) ?? 0;
     
     const nextState = {
       ...prevState,
       subwayWindows: {...prevState.subwayWindows},
+      checkedStations: [...prevState.checkedStations, ...prevState.mixedStations],
       mixedStations: [],
+      checkedTransfers: [...prevState.checkedTransfers, ...prevState.mixedTransfers],
+      mixedTransfers: [],
       selectedStation: undefined,
       selectedSubway: undefined,
       subwaySelectDisabled: true,
       stationSelectDisabled: true,
-      cardDrawDisabled: true
+      cardDrawDisabled: true,
+      numDrawn: prevType === "reshuffle" ? 1 : prevState.numDrawn + 1
     };
 
-    switch (prevType) {
-      case "number":
-        nextState.subwayWindows[prevState.selectedSubway] = [...prevState.subwayWindows?.[prevState.selectedSubway] ?? [], prevValue];
-        nextState.numDrawn = prevState.numDrawn + 1;
-        const newChecksNumber = takeWhile(prevSubway.route.slice(prevFreeIx, prevFreeIx + prevValue), wasStationFree);
-        nextState.checkedStations = [...prevState.checkedStations, ...newChecksNumber];
-        break; 
-      case "skip":
-        nextState.subwayWindows[prevState.selectedSubway] = [...prevState.subwayWindows?.[prevState.selectedSubway] ?? [], prevValue];
-        nextState.numDrawn = prevState.numDrawn + 1;
-        const newChecksSkip = prevSubway.route.slice(prevFreeIx, -1).filter(wasStationFree).slice(0, prevValue);
-        nextState.checkedStations = [...prevState.checkedStations, ...newChecksSkip];
-        break;
-      case "reshuffle":
-        nextState.subwayWindows[prevState.selectedSubway] = [...prevState.subwayWindows?.[prevState.selectedSubway] ?? [], prevValue];
-        nextState.cards = shuffle(prevState.cards);
-        nextState.numDrawn = 1;
-        const newChecksReshuffle = takeWhile(prevSubway.route.slice(prevFreeIx, prevFreeIx + prevValue), wasStationFree);
-        nextState.checkedStations = [...prevState.checkedStations, ...newChecksReshuffle];
-        break;
-      case "transfer":
-        nextState.subwayWindows[prevState.selectedSubway] = [...prevState.subwayWindows?.[prevState.selectedSubway] ?? [], prevValue];
-        nextState.numDrawn = prevState.numDrawn + 1;
-        const newChecksTransfer = Array.from(takeWhile(prevSubway.route.slice(prevFreeIx, prevFreeIx + 1), wasStationFree));
-        nextState.checkedStations = [...prevState.checkedStations, ...newChecksTransfer];
-        nextState.transferStations = [...prevState.transferStations, ...newChecksTransfer];
-        break;
-      case "free":
-        nextState.checkedStations = [...prevState.checkedStations, prevState.selectedStation];
-        nextState.numDrawn = prevState.numDrawn + 1;
-        break;
-      default: //First card
-        nextState.numDrawn = prevState.numDrawn + 1;
-        break;
+    if (prevState.selectedSubway) {
+      const prevSubwayWindows = prevState.subwayWindows?.[prevState.selectedSubway] ?? [];
+      nextState.subwayWindows[prevState.selectedSubway] = [...prevSubwayWindows, prevValue];
     }
 
     const nextIx = nextState.cards.length - nextState.numDrawn;
     const {type: nextType } = nextIx < nextState.cards.length ? nextState.cards[nextIx] : {};
 
     deckRef.current?.blur();
-    switch (nextType) {
-      case "number":
-      case "skip":
-      case "reshuffle":
-      case "transfer":
-        nextState.subwaySelectDisabled = false;
-        boardRef.current?.subways()?.focus();
-        break;
-      case "free":
-        nextState.stationSelectDisabled = false;
-        boardRef.current?.stations()?.focus();
-        break;
-      default:
-        break;
+    if (nextType === "free") {
+      nextState.stationSelectDisabled = false;
+      boardRef.current?.stations()?.focus();
+    } else {
+      nextState.subwaySelectDisabled = false;
+      boardRef.current?.subways()?.focus();
     }
 
     return nextState;
@@ -183,7 +174,8 @@ function App() {
       subways={state.subways}
       checkedStations={state.checkedStations}
       mixedStations={state.mixedStations}
-      transferStations={state.transferStations}
+      checkedTransfers={state.checkedTransfers}
+      mixedTransfers={state.mixedTransfers}
       subwayWindows={state.subwayWindows}
       subwaySelectDisabled={state.subwaySelectDisabled}
       stationSelectDisabled={state.stationSelectDisabled}
