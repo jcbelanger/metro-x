@@ -9,8 +9,8 @@ const Station = React.forwardRef(({position:[x, y], styles, onClick, disabled=tr
 
   return <SvgDefsContext.Consumer>{({url}) => (
     <g
-      className={'station' + (transfer ? ' transfer' : '') }
-      filter={url('faint-drop-shadow')}
+      ref={ref}
+      className='station'
       {...ariaCheckbox({
         checked: checked,
         disabled: disabled, 
@@ -18,21 +18,44 @@ const Station = React.forwardRef(({position:[x, y], styles, onClick, disabled=tr
       })}
     >
       <title>{`Station (${x}, ${y})` + (transfer ? ' (transfer)' : '')}</title>
+
       <circle
-        ref={ref}
-        className='station-circle'
+        className='station-bg'
+        cx={cx}
+        cy={cy}
+        r={styles.station.radius}
+      />
+
+      {transfer && <text 
+        className="station-value"
+        x={cx}
+        y={cy}
+        textLength={2 * styles.station.radius}
+      >✖</text>}
+      
+      <circle
+        className='station-border'
         cx={cx}
         cy={cy}
         r={styles.station.radius}
         strokeWidth={styles.station.strokeWidth}
       />
-      {transfer && <text 
-        x={cx}
-        y={cy}
-        textLength={2 * styles.station.radius}
-        textAnchor='middle'
-        dominantBaseline='central'
-      >✖</text>}
+
+      <circle
+        className='station-border-bg'
+        cx={cx}
+        cy={cy}
+        r={styles.station.radius}
+        strokeWidth={styles.station.strokeWidth}
+      />
+
+      <circle
+        className='station-border'
+        cx={cx}
+        cy={cy}
+        r={styles.station.radius}
+        strokeWidth={styles.station.strokeWidth}
+      />
     </g>
   )}</SvgDefsContext.Consumer>
 });

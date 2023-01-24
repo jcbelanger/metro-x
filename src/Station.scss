@@ -1,6 +1,58 @@
+@use 'sass:math';
+
+
+$radius: 15;
+$circum: 2 * math.$pi * $radius;
+$dashLen: $circum / 5;
+
+@keyframes dashed-stroke-slide {
+	from {
+		stroke-dashoffset: 2 * $dashLen;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+@mixin dashed-stroke-slide {
+	stroke-dasharray: (.2 *  $dashLen) (.3 * $dashLen);
+	stroke-linecap: round;
+	animation: dashed-stroke-slide 3s linear infinite;
+
+	@media (prefers-reduced-motion) {
+		animation: none;
+	}
+}
+
 .station {
-	text {
+	outline: none;
+	filter: drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.5));
+	
+	.station-bg {
+		fill: #fff; 
+		stroke-width: 0;
+	}
+
+	.station-value {
 		fill: #b0b1b5;
+		font-weight: 400;
+		text-anchor: middle;
+		dominant-baseline: central;
+	}
+
+	.station-border-bg {
+		fill: none;
+		stroke: transparent;
+	}
+
+	.station-border-bg,
+	.station-border {
+		stroke-width: 4px;
+	}
+
+	.station-border {
+		stroke: #b0b1b5;
+		fill: none;
 	}
 
 	&[aria-disabled='false'] {
@@ -10,26 +62,45 @@
 	&[aria-disabled='true'] {
 		cursor: not-allowed;
 	}
-
-	&[aria-checked='false'] {
-		.station-circle {
-			stroke: #b0b1b5;
-			fill: #ffffff;
-		}
-	}
 	
 	&[aria-checked='true'] {
-		.station-circle {
+		.station-bg {
 			fill: #242021; 
+		}
+		.station-border {
 			stroke: #b0b1b5;
-			// stroke-width: 2;
+		}
+	}
+
+	&[aria-disabled='false'][aria-checked='false'] {
+		&:hover,
+		&:focus,
+		&:active {
+			.station-border {
+				stroke: #242021;
+				@include dashed-stroke-slide();
+			}
 		}
 	}
 
 	&[aria-checked='mixed'] {
-		.station-circle {
+		.station-bg {
+			fill: #242021;
 			stroke: #b0b1b5;
-			fill: #242021; 
 		}
+
+		.station-border {
+			stroke: #b0b1b5;
+			@include dashed-stroke-slide();
+		}
+		
+		// background: black;
+		// border-radius: 50%;
+		// box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+		// margin: 10px;
+		// height: 20px;
+		// width: 20px;
+		// transform: scale(1);
+		// animation: pulse-black 2s infinite;
 	}
 }
