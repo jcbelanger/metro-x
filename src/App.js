@@ -1,4 +1,4 @@
-import './App.css';
+import './App.scss';
 import React, { useRef, useReducer} from 'react';
 import metroCity from './metro-city.json';
 import Board from './Board';

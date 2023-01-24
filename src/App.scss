@@ -18,27 +18,22 @@
 
 .CardMat {
     flex: 0 2 10em;
-}
-
-@media (min-height: 20rem) {
-    .CardMat {
+    
+    @media (min-height: 20rem) {
         min-height: 7rem;
     }
-}
 
-@media (min-height: 30rem) {
-    .CardMat {
+    @media (min-height: 30rem) {
         min-height: 10rem;
     }
-}
-
-@media (min-height: 40rem) {
-    .CardMat {
+    
+    @media (min-height: 40rem) {
         min-height: 15rem;
     }
 }
 
-@media only screen and (min-aspect-ratio: 2 / 1) and (max-height: 50rem) {
+
+@media only screen and (min-aspect-ratio: 2 / 1) and (max-height: 55rem) {
     .App {
         flex-direction: row;
         width: auto;

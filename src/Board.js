@@ -151,7 +151,7 @@ const Board = React.forwardRef(({
           fill="freeze"
         />
 
-        <filter id={id('faint-drop-shadow')} x='-20%' y='-20%' width='140%' height='140%'>
+        <filter id={id('faint-drop-shadow')} x='-30%' y='-30%' width='160%' height='160%'>
           <feGaussianBlur in='SourceAlpha' stdDeviation='3'/>
           <feOffset dx='3' dy='2' />
           <feComponentTransfer>
