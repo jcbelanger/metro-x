@@ -67,7 +67,7 @@ const Board = React.forwardRef(({
   selectedSubway,
   transferStations,
   checkedStations,
-  subwayValues, 
+  subwayWindows, 
   subwaySelectDisabled=true, 
   stationSelectDisabled=true, 
   onStationClick, 
@@ -178,13 +178,13 @@ const Board = React.forwardRef(({
         <title>Subway Select</title>
         {subways.map(subway => 
           <Subway 
-            key={[subway.name, ...(subwayValues?.[subway.name] ?? [])]}
+            key={[subway.name, ...(subwayWindows?.[subway.name] ?? [])]}
             styles={styles}
             subway={subway}
-            values={subwayValues?.[subway.name]}
+            values={subwayWindows?.[subway.name]}
             edgeNames={edgeNames}
             checked={selectedSubway === subway.name}
-            disabled={subwaySelectDisabled || (subwayValues?.[subway.name]?.length ?? 0) >= subway.windows}
+            disabled={subwaySelectDisabled || (subwayWindows?.[subway.name]?.length ?? 0) >= subway.windows}
             onClick={(event) => onSubwayClick?.(subway.name, event)}
           />
         )}

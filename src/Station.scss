@@ -1,26 +1,6 @@
 .station {
-	// outline: none;
-	
-	&[aria-checked='false'] {
-		.station-circle {
-			stroke: #b0b1b5;
-			fill: #ffffff;
-		}
-	}
-
-	&[aria-checked='mixed'] {
-		.station-circle {
-			stroke: #b0b1b5;
-			fill: #242021; 
-		}
-	}
-	
-	&[aria-checked='true'] {
-		.station-circle {
-			fill: #242021; 
-			stroke: #b0b1b5;
-			stroke-width: 2;
-		}
+	text {
+		fill: #b0b1b5;
 	}
 
 	&[aria-disabled='false'] {
@@ -31,9 +11,25 @@
 		cursor: not-allowed;
 	}
 
-	&.transfer {
-		text {
-			fill: #b0b1b5;
+	&[aria-checked='false'] {
+		.station-circle {
+			stroke: #b0b1b5;
+			fill: #ffffff;
+		}
+	}
+	
+	&[aria-checked='true'] {
+		.station-circle {
+			fill: #242021; 
+			stroke: #b0b1b5;
+			// stroke-width: 2;
+		}
+	}
+
+	&[aria-checked='mixed'] {
+		.station-circle {
+			stroke: #b0b1b5;
+			fill: #242021; 
 		}
 	}
 }

@@ -8,16 +8,24 @@ import { shuffle, takeWhile } from './utils';
 
 
 function App() {
+  const subways = Array.from(metroCity);
+
   const deckRef = useRef();
   const boardRef = useRef();
-
-  const subways = Array.from(metroCity);
+  const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 55rem)', [subways]);
 
   const initalState = {
     subways,
     checkedStations: [],
     transferStations: [],
-    subwayValues: Object.fromEntries(subways.map(subway => [subway.name, []])),
+    subwayWindows: {},
+    selectedSubway: undefined,
+    selectedStation: undefined,
+    impactedSatations: [],
+    cardDrawDisabled: false,
+    subwaySelectDisabled: true,
+    stationSelectDisabled: true,
+    numDrawn: 0,
     cards: shuffle([
       {type: 'number', value: 3},
       {type: 'number', value: 3},
@@ -34,14 +42,7 @@ function App() {
       {type: 'skip', label: 'Skip', labelOffset: '30', value: 2},
       {type: 'skip', label: 'Skip', labelOffset: '30', value: 2},
       {type: 'skip', label: 'Skip', labelOffset: '30', value: 3}
-    ]),
-    numDrawn: 0,
-    selectedSubway: undefined,
-    selectedStation: undefined,
-    impactedSatations: [],
-    cardDrawDisabled: false,
-    subwaySelectDisabled: true,
-    stationSelectDisabled: true
+    ])
   };
 
   const [state, dispatch] = useReducer((prevState, action) => {
@@ -70,7 +71,7 @@ function App() {
         
         const nextState = {
           ...prevState,
-          subwayValues: {...prevState.subwayValues},
+          subwayWindows: {...prevState.subwayWindows},
           selectedStation: undefined,
           selectedSubway: undefined,
           subwaySelectDisabled: true,
@@ -80,26 +81,26 @@ function App() {
 
         switch (prevType) {
           case "number":
-            nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
+            nextState.subwayWindows[prevState.selectedSubway] = [...prevState.subwayWindows?.[prevState.selectedSubway] ?? [], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
             const newChecksNumber = takeWhile(prevSubway.route.slice(prevFreeIx, prevFreeIx + prevValue), wasStationFree);
             nextState.checkedStations = [...prevState.checkedStations, ...newChecksNumber];
             break; 
           case "skip":
-            nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
+            nextState.subwayWindows[prevState.selectedSubway] = [...prevState.subwayWindows?.[prevState.selectedSubway] ?? [], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
             const newChecksSkip = prevSubway.route.slice(prevFreeIx, -1).filter(wasStationFree).slice(0, prevValue);
             nextState.checkedStations = [...prevState.checkedStations, ...newChecksSkip];
             break;
           case "reshuffle":
-            nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
+            nextState.subwayWindows[prevState.selectedSubway] = [...prevState.subwayWindows?.[prevState.selectedSubway] ?? [], prevValue];
             nextState.cards = shuffle(prevState.cards);
             nextState.numDrawn = 1;
             const newChecksReshuffle = takeWhile(prevSubway.route.slice(prevFreeIx, prevFreeIx + prevValue), wasStationFree);
             nextState.checkedStations = [...prevState.checkedStations, ...newChecksReshuffle];
             break;
           case "transfer":
-            nextState.subwayValues[prevState.selectedSubway] = [...prevState.subwayValues[prevState.selectedSubway], prevValue];
+            nextState.subwayWindows[prevState.selectedSubway] = [...prevState.subwayWindows?.[prevState.selectedSubway] ?? [], prevValue];
             nextState.numDrawn = prevState.numDrawn + 1;
             const newChecksTransfer = Array.from(takeWhile(prevSubway.route.slice(prevFreeIx, prevFreeIx + 1), wasStationFree));
             nextState.checkedStations = [...prevState.checkedStations, ...newChecksTransfer];
@@ -155,15 +156,13 @@ function App() {
     dispatch({type: 'select_subway', name});
   }
 
-  const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 50rem)', []);
-
   return <div className='App'>
     <Board
       ref={boardRef} 
       subways={state.subways}
       checkedStations={state.checkedStations}
       transferStations={state.transferStations}
-      subwayValues={state.subwayValues}
+      subwayWindows={state.subwayWindows}
       subwaySelectDisabled={state.subwaySelectDisabled}
       stationSelectDisabled={state.stationSelectDisabled}
       selectedStation={state.selectedStation}
