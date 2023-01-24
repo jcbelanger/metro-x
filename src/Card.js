@@ -129,7 +129,7 @@ function Card(props) {
         </g>
         
 
-        <g class="back-logo">
+        <g className="back-logo">
           <line
             x1={0}
             y1={.25 * height}
