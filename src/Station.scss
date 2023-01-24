@@ -1,0 +1,39 @@
+.station {
+	// outline: none;
+	
+	&[aria-checked='false'] {
+		.station-circle {
+			stroke: #b0b1b5;
+			fill: #ffffff;
+		}
+	}
+
+	&[aria-checked='mixed'] {
+		.station-circle {
+			stroke: #b0b1b5;
+			fill: #242021; 
+		}
+	}
+	
+	&[aria-checked='true'] {
+		.station-circle {
+			fill: #242021; 
+			stroke: #242021;
+			stroke-width: 1;
+		}
+	}
+
+	&[aria-disabled='false'] {
+		cursor: pointer;
+	}
+
+	&[aria-disabled='true'] {
+		cursor: not-allowed;
+	}
+
+	&.transfer {
+		text {
+			fill: #b0b1b5;
+		}
+	}
+}

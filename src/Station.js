@@ -1,4 +1,4 @@
-import './Station.css';
+import './Station.scss';
 import React from 'react';
 import SvgDefsContext from './SvgDefsContext';
 import {ariaCheckbox} from './Aria';

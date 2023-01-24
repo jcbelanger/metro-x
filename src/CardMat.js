@@ -1,4 +1,4 @@
-import './CardMat.css';
+import './CardMat.scss';
 import React from 'react';
 import Card from './Card';
 import SvgDefsContext, { useDefIds } from './SvgDefsContext';
@@ -79,29 +79,30 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDra
           >{cardDrawDisabled ? '✖' : '✓'}</text>
 
         </g>
-        {cards.slice(0, cards.length - numDrawn).map((card, ix) => (
+        
+        {cards.slice(0, cards.length - numDrawn).map((card, ix) =>
           <Card
-            key={ix}
+            key={[ix, card.type, card.value]}
             revealed={false}
             x={deckPos.x + deckOffset.x * ix}
             y={deckPos.y + deckOffset.y * ix}
             {...cardDims}
             {...card} 
           />
-        ))}
+        )}
       </g>
 
       <g>
-        {cards.slice(cards.length - numDrawn, cards.length).reverse().map((card, ix) => {
-          return <Card
-            key={ix}
+        {cards.slice(cards.length - numDrawn, cards.length).reverse().map((card, ix) => 
+          <Card
+            key={[ix, card.type, card.value]}
             revealed={true}
             x={activePos.x + deckOffset.x*ix}
             y={activePos.y + deckOffset.y*ix}
             {...cardDims}
             {...card} 
-          />;
-        })}
+          />
+        )}
       </g>
 
     </svg>

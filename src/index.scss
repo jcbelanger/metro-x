@@ -1,23 +1,24 @@
-
-html, 
-body,
-#root {
-	height: 100%;
-}
-
 * {
   padding: 0;
   margin: 0;
+}
+
+html, 
+body {
+	height: 100%;
 }
 
 body {
   font-family: futura-lt, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-tap-highlight-color: transparent;
   background-color: #00223a;
 }
 
 #root {
+	height: 100%;
   display: flex;
   align-items: center;
 }
@@ -32,6 +33,10 @@ body {
   bottom: 0;
   left: -50%;
   z-index:-1;
+
+  @media (prefers-reduced-motion) {
+      animation: none;
+  }
 }
 
 .bg2 {
@@ -53,11 +58,5 @@ body {
   }
   100% {
     transform: translateX(25%);
-  }
-}
-
-@media (prefers-reduced-motion) {
-  .bg {
-    animation: none;
   }
 }

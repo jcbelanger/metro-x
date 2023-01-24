@@ -1,4 +1,4 @@
-import './Board.css';
+import './Board.scss';
 import React, { useImperativeHandle, useRef } from 'react';
 import { zip } from './utils';
 import NestedMap from './nested';
@@ -153,7 +153,7 @@ const Board = React.forwardRef(({
 
         <filter id={id('faint-drop-shadow')} x='-20%' y='-20%' width='140%' height='140%'>
           <feGaussianBlur in='SourceAlpha' stdDeviation='3'/>
-          <feOffset dx='4' dy='2' />
+          <feOffset dx='3' dy='2' />
           <feComponentTransfer>
             <feFuncA type='linear' slope='0.4'/>
           </feComponentTransfer>

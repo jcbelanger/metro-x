@@ -1,4 +1,4 @@
-import './Subway.css';
+import './Subway.scss';
 import { rangeMap, zip } from './utils';
 import SvgDefsContext from './SvgDefsContext';
 import {ariaButton} from './Aria';

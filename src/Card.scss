@@ -1,0 +1,88 @@
+.card {
+
+    text {
+        user-select: none;
+    }
+
+    .card-bg {
+        fill: #009dde;
+        stroke: #fff;
+    }
+
+    .front {
+        .card-value {
+            circle {
+                fill: #242021;
+            }
+    
+            text {
+                font-weight: 400;
+                text-anchor: middle;
+                dominant-baseline: central;
+                fill: #fff;
+            }
+        }
+    
+        .card-label {
+            rect {
+                fill: #fff;
+            }
+    
+            text {
+                font-size: 28px;
+                font-weight: 700;
+                transform: rotate(-90);
+                text-anchor: end;
+                dominant-baseline: central;
+            }
+    
+        }
+    }
+
+    .back {
+        .back-lines {
+            line {
+                stroke-linecap: round;
+            }
+        }
+        .back-logo {
+            line {
+                stroke: #000;
+            }
+            circle {
+                fill: #d11e29;
+            }
+            text {
+                fill: #fff;
+                text-anchor: end;
+                dominant-baseline: central;
+            }
+        }
+    }
+
+    $card-colors: (
+        skip: #F6891F,
+        free: #007D71,
+        transfer: #686665,
+        reshuffle: #009dde,
+        number: #009dde
+    );
+
+    @each $type, $color in $card-colors {
+        &.#{$type}-card {
+            .front {
+                .card-bg {
+                    fill: $color;
+                }
+            }
+        }
+    }
+    
+    &.reshuffle-card {
+        .card-label {
+            text {
+                font-size: 22px;
+            }
+        }
+    }
+}

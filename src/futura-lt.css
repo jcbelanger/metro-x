@@ -6,14 +6,14 @@
     src:local('Futura LT'), url(./fonts/futura-lt/FuturaLT.ttf) format('truetype');
 }
 
-/* 
-@font-face {
+
+/* @font-face {
     font-family: futura-lt;
     font-style: normal;
     font-weight: 300;
     src:local('Futura LT'), url(./fonts/futura-lt/FuturaLT-Light.ttf) format('truetype');
-}
-*/
+} */
+
 
 @font-face {
     font-family: futura-lt;
