@@ -5,7 +5,7 @@ $radius: 15;
 $circum: 2 * math.$pi * $radius;
 $dashLen: $circum / 5;
 
-@keyframes dashed-stroke-slide {
+@keyframes dashed-station {
 	from {
 		stroke-dashoffset: 2 * $dashLen;
 	}
@@ -14,10 +14,10 @@ $dashLen: $circum / 5;
 	}
 }
 
-@mixin dashed-stroke-slide {
+@mixin dashed-station {
 	stroke-dasharray: (.2 *  $dashLen) (.3 * $dashLen);
 	stroke-linecap: round;
-	animation: dashed-stroke-slide 3s linear infinite;
+	animation: dashed-station 3s linear infinite;
 
 	@media (prefers-reduced-motion) {
 		animation: none;
@@ -26,7 +26,7 @@ $dashLen: $circum / 5;
 
 .station {
 	outline: none;
-	filter: drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.5));
+
 	
 	.station-bg {
 		fill: #fff; 
@@ -76,14 +76,18 @@ $dashLen: $circum / 5;
 		&:hover,
 		&:focus,
 		&:active {
+			filter: drop-shadow(3px 3px 4px rgba(0, 0, 0, 0.5));
+
 			.station-border {
 				stroke: #242021;
-				@include dashed-stroke-slide();
+				@include dashed-station();
 			}
 		}
 	}
 
 	&[aria-checked='mixed'] {
+		filter: drop-shadow(3px 3px 4px rgba(0 0 0 / 0.5));
+
 		.station-bg {
 			fill: #242021;
 			stroke: #b0b1b5;
@@ -91,7 +95,7 @@ $dashLen: $circum / 5;
 
 		.station-border {
 			stroke: #b0b1b5;
-			@include dashed-stroke-slide();
+			@include dashed-station();
 		}
 		
 		// background: black;

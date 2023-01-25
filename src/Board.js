@@ -64,34 +64,35 @@ const styles = {
 
 const Board = React.forwardRef(({
   subways, 
+  windows, 
+  stations,
+  transfers,
+  previewWindows,
+  previewStations,
+  previewTransfers,
   selectedSubway,
-  checkedTransfers,
-  mixedTransfers,
-  checkedStations,
-  mixedStations,
-  subwayWindows, 
   subwaySelectDisabled=true, 
   stationSelectDisabled=true, 
-  onStationClick, 
-  onSubwayClick
+  onSubwayClick,
+  onStationClick
 }, ref) => {
 
   const subwaysRef = useRef();
   const stationsRef = useRef();
 
   const stationCheckValues = new NestedMap();
-  for (const checkedStation of checkedStations) {
+  for (const checkedStation of stations) {
     stationCheckValues.set(checkedStation, prev => prev, () => 'true');
   }
-  for (const mixedStation of mixedStations) {
+  for (const mixedStation of previewStations) {
     stationCheckValues.set(mixedStation, prev => 'mixed', () => 'mixed');
   }
 
   const transferSet = new NestedMap();
-  for (const checkedTransfer of checkedTransfers) {
+  for (const checkedTransfer of transfers) {
     transferSet.set(checkedTransfer, prev => true, () => true);
   }
-  for (const mixedTransfer of mixedTransfers) {
+  for (const mixedTransfer of previewTransfers) {
     transferSet.set(mixedTransfer, prev => true, () => true);
   }
   
@@ -146,16 +147,18 @@ const Board = React.forwardRef(({
     >
       <title>Subway Select</title>
       {subways.map(subway => {
-        const windowValues = subwayWindows?.[subway.name] ?? [];
+        const windowValues = windows?.[subway.name];
+        const isWindowsFull = (windowValues?.length ?? 0) >= subway.numWindows;
         const checked = selectedSubway === subway.name ? 'mixed' : 'false';
         return <Subway 
           key={subway.name}
           styles={styles}
           subway={subway}
-          windowValues={windowValues}
+          windows={windowValues}
+          previewWindows={previewWindows?.[subway.name]}
           edgeNames={edgeNames}
           checked={checked}
-          disabled={subwaySelectDisabled || (subwayWindows?.[subway.name]?.length ?? 0) >= subway.windows}
+          disabled={subwaySelectDisabled || isWindowsFull}
           onClick={(event) => onSubwayClick?.(subway.name, event)}
         />;
       })}

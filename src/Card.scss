@@ -1,5 +1,6 @@
 .card {
-
+    filter: drop-shadow(10px 10px 7px rgb(0 0 0 / 0.5)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.3));
+    
     text {
         user-select: none;
     }
