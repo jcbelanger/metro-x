@@ -1,14 +1,15 @@
 import './Subway.scss';
 import { rangeMap, zip } from './utils';
 import SvgDefsContext from './SvgDefsContext';
-import {ariaButton} from './Aria';
+import {ariaCheckbox} from './Aria';
 
 function Subway({
   subway, 
-  values, 
+  windowValues, 
   edgeNames, 
   styles, 
   onClick, 
+  checked=false,
   disabled=true
 }) {
   const {
@@ -70,9 +71,9 @@ function Subway({
 
   const [trainCarX, trainCarY] = subway.trainCar.map(d => d * spacing);
 
-  const numWindowGaps = Math.max(0, subway.windows - 1);
+  const numWindowGaps = Math.max(0, subway.numWindows - 1);
 
-  const trainCarWidth = subway.windows * windowWidth + numWindowGaps * windowGap + 2 * trainCarPadX + frontCornerX;
+  const trainCarWidth = subway.numWindows * windowWidth + numWindowGaps * windowGap + 2 * trainCarPadX + frontCornerX;
   const trainCarHeight = windowHeight + 2 * trainCarPadY;
 
   const trainCarLeft = trainCarX - windowWidth / 2 - trainCarPadX;
@@ -134,7 +135,7 @@ function Subway({
   const frontWindowLeft = left + trainCarWidth - frontWidth;
   const frontWindowHeight = trainCarHeight - 2 * (frontLightMargin + frontLightRadius);
 
-  const numWheels = Math.max(2, subway.windows);
+  const numWheels = Math.max(2, subway.numWindows);
 
   const underTrackLeft = left + wheelsMargin + wheelRadius;
   const underTrackY = top + trainCarHeight + underTrackMargin + underTrackWidth / 2;
@@ -149,7 +150,8 @@ function Subway({
   return <SvgDefsContext.Consumer>{ ({url}) => (
     <g 
       className='subway'
-      {...ariaButton({
+      {...ariaCheckbox({
+        checked: checked,
         disabled: disabled, 
         onClick: onClick
       })}
@@ -178,7 +180,7 @@ function Subway({
 
         <g className='subway-status'>
 
-          <g className='route-name' filter={url('faint-drop-shadow')}>
+          <g className='route-name'>
             <title>Subway {subway.name}</title>
             <circle 
               cx={routeNameX}
@@ -242,7 +244,7 @@ function Subway({
             </g>
           </g>
 
-          <g className='train-cart' filter={url('faint-drop-shadow')}>
+          <g className='train-cart'>
 
             <g className='wheels'>
               {[...rangeMap(numWheels, wheelIndex => {
@@ -302,11 +304,14 @@ function Subway({
             </g>
 
             <g className='windows'>
-              {[...rangeMap(subway.windows, windowIndex => {
+              {[...rangeMap(subway.numWindows, windowIndex => {
                 const windowLeft = left + trainCarPadX + windowIndex * (windowWidth + windowGap);
                 const windowTop = top + trainCarPadY;
-                const windowValue = values?.[windowIndex];
-                return <g className='window' key={[windowIndex, windowValue]}>
+                const windowValue = windowValues?.[windowIndex];
+                return <g 
+                  className='window' 
+                  key={windowIndex
+                }>
                   <rect
                     className='window-fill'
                     x={windowLeft}
@@ -318,7 +323,6 @@ function Subway({
                   <path 
                     className='window-border'
                     strokeWidth={windowBorder}
-                    filter={url('lighten')}
                     strokeLinejoin='round'
                     fill='none'
                     stroke={subway.color}

@@ -1,21 +1,31 @@
 .subway {
 	outline: none;
-}
-.subway[aria-disabled='false'] {
-    cursor: pointer;
-}
-.subway[aria-disabled='true'] {
-    cursor: not-allowed;
+	
+	&[aria-disabled='false'] {
+		cursor: pointer;
+	}
+
+	&[aria-disabled='true'] {
+		cursor: not-allowed;
+	}
+
+	&[aria-disabled='false'] {
+		&:hover,
+		&:focus,
+		&:active {
+			transform: drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.5));
+		}
+	}
 }
 
-.subway[aria-disabled='false']:hover .route-name,
-.subway[aria-disabled='false']:focus .route-name {
-	filter: url(#subway-label-hover), url(#subway-hover);
-}
-.subway[aria-disabled='false']:hover .subway-status,
-.subway[aria-disabled='false']:focus .subway-status {
-	filter: url(#subway-label-hover);
-}
+// .subway[aria-disabled='false']:hover .route-name,
+// .subway[aria-disabled='false']:focus .route-name {
+// 	// filter: url(#subway-label-hover), url(#subway-hover);
+// }
+// .subway[aria-disabled='false']:hover .subway-status,
+// .subway[aria-disabled='false']:focus .subway-status {
+// 	// filter: url(#subway-label-hover);
+// }
 
 
 .route-name {

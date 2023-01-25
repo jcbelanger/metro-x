@@ -1,7 +1,6 @@
 import './CardMat.scss';
 import React from 'react';
 import Card from './Card';
-import SvgDefsContext, { useDefIds } from './SvgDefsContext';
 import {ariaButton} from './Aria';
 
 const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDrawDisabled=false, onDeckDraw}, ref) => {
@@ -28,85 +27,70 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDra
   const activePos = {...deckPos};
   activePos[majorPos] = activePos[majorPos] + maxDeckOffset[majorPos] + cardDims[majorLen] + gap;
 
-  const svgDefs = useDefIds(['heavy-drop-shadow']);
-  const {id, url} = svgDefs;
-  return <SvgDefsContext.Provider value={svgDefs}>
-    <svg 
-        className='CardMat'
-        version='1.1'
-        baseProfile='full' 
-        width='100%'
-        height='100%'
-        viewBox={viewBox} 
-        xmlns='http://www.w3.org/2000/svg'
+  return <svg 
+      className='CardMat'
+      version='1.1'
+      baseProfile='full' 
+      width='100%'
+      height='100%'
+      viewBox={viewBox} 
+      xmlns='http://www.w3.org/2000/svg'
+  >
+    <g
+      className='deck'
+      ref={ref}
+      {...ariaButton({
+        disabled: cardDrawDisabled, 
+        onClick: event => onDeckDraw?.(event)
+      })}
     >
-      <defs>
-        <filter id={id('heavy-drop-shadow')} x='-20%' y='-20%' width='140%' height='140%'>
-          <feGaussianBlur in='SourceAlpha' stdDeviation='5'/>
-          <feOffset dx='4' dy='2' />
-          <feComponentTransfer>
-            <feFuncA type='linear' slope='0.8'/>
-          </feComponentTransfer>
-          <feBlend in='SourceGraphic' />
-        </filter>
-      </defs>
+      <title>Draw next card</title>
 
-      <g
-        className='deck'
-        ref={ref}
-        {...ariaButton({
-          disabled: cardDrawDisabled, 
-          onClick: event => onDeckDraw?.(event)
-        })}
-      >
-        <title>Draw next card</title>
+      <g className='deck-bottom'>
+        <circle 
+          cx={deckPos.x + cardDims.width / 2}
+          cy={deckPos.y + cardDims.height / 2}
+          r={Math.min(cardDims.width, cardDims.height) / 2}
+          fill={cardDrawDisabled ? '#677275' : '#43a047'}
+        />
+        <text  
+          x={deckPos.x + cardDims.width / 2}
+          y={deckPos.y + cardDims.height / 2}
+          fontWeight={700}
+          textAnchor='middle'
+          dominantBaseline='central'
+          fill='#fff'
+          fontSize={Math.min(cardDims.width, cardDims.height) / 2}
+        >{cardDrawDisabled ? '✖' : '✓'}</text>
 
-        <g className='deck-bottom' filter={url('heavy-drop-shadow')}>
-          <circle 
-            cx={deckPos.x + cardDims.width / 2}
-            cy={deckPos.y + cardDims.height / 2}
-            r={Math.min(cardDims.width, cardDims.height) / 2}
-            fill={cardDrawDisabled ? '#677275' : '#43a047'}
-          />
-          <text  
-            x={deckPos.x + cardDims.width / 2}
-            y={deckPos.y + cardDims.height / 2}
-            fontWeight={700}
-            textAnchor='middle'
-            dominantBaseline='central'
-            fill='#fff'
-            fontSize={Math.min(cardDims.width, cardDims.height) / 2}
-          >{cardDrawDisabled ? '✖' : '✓'}</text>
-
-        </g>
-        
-        {cards.slice(0, cards.length - numDrawn).map((card, ix) =>
-          <Card
-            key={[ix, card.type, card.value]}
-            revealed={false}
-            x={deckPos.x + deckOffset.x * ix}
-            y={deckPos.y + deckOffset.y * ix}
-            {...cardDims}
-            {...card} 
-          />
-        )}
       </g>
+      
+      {cards.slice(0, cards.length - numDrawn).map((card, ix) =>
+        <Card
+          key={ix}
+          revealed={false}
+          x={deckPos.x + deckOffset.x * ix}
+          y={deckPos.y + deckOffset.y * ix}
+          {...cardDims}
+          {...card} 
+        />
+      )}
+    </g>
 
-      <g>
-        {cards.slice(cards.length - numDrawn, cards.length).reverse().map((card, ix) => 
-          <Card
-            key={[ix, card.type, card.value]}
-            revealed={true}
-            x={activePos.x + deckOffset.x*ix}
-            y={activePos.y + deckOffset.y*ix}
-            {...cardDims}
-            {...card} 
-          />
-        )}
-      </g>
+    <g>
+      {cards.slice(cards.length - numDrawn, cards.length).reverse().map((card, ix) => 
+        <Card
+          key={ix}
+          revealed={true}
+          x={activePos.x + deckOffset.x*ix}
+          y={activePos.y + deckOffset.y*ix}
+          {...cardDims}
+          {...card} 
+        />
+      )}
+    </g>
 
-    </svg>
-  </SvgDefsContext.Provider>;
+  </svg>;
 });
 
 export default CardMat;

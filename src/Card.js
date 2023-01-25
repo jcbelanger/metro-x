@@ -1,6 +1,5 @@
 import { useId } from 'react';
 import './Card.scss';
-import SvgDefsContext from './SvgDefsContext';
 
 
 function Card(props) {
@@ -15,7 +14,6 @@ function Card(props) {
       revealed
     } = props;
 
-  
     const strokeWidth = 10;
     const id = useId();
     const bgId = id + '-bg';
@@ -152,33 +150,28 @@ function Card(props) {
       </g>;
     };
     
-    return <SvgDefsContext.Consumer>{ ({url}) => (
-      <g 
-        className={`card ${ revealed ? type + '-card' : ''}`}
-        transform={`translate(${x}, ${y})`}
-        filter={url('heavy-drop-shadow')}
-      >
-        <rect 
-          className='card-bg'
-          id={bgId}
-          x={strokeWidth / 2}
-          y={strokeWidth / 2}
-          width={width - strokeWidth}
-          height={height - strokeWidth}
-          strokeWidth={strokeWidth}
-          rx={20}
-        />
-        
-        <clipPath id={clipId}>
-          <use href={`#${bgId}`} />
-        </clipPath>
-    
-        {(revealed ? front : back)(url)}
-        
-      </g>
-    )}</SvgDefsContext.Consumer>;
-    
-    
+    return <g 
+      className={`card ${ revealed ? type + '-card' : ''}`}
+      transform={`translate(${x}, ${y})`}
+    >
+      <rect 
+        className='card-bg'
+        id={bgId}
+        x={strokeWidth / 2}
+        y={strokeWidth / 2}
+        width={width - strokeWidth}
+        height={height - strokeWidth}
+        strokeWidth={strokeWidth}
+        rx={20}
+      />
+      
+      <clipPath id={clipId}>
+        <use href={`#${bgId}`} />
+      </clipPath>
+  
+      {(revealed ? front : back)()}
+      
+    </g>;
   }
   
   

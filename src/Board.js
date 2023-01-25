@@ -4,7 +4,7 @@ import { zip } from './utils';
 import NestedMap from './nested';
 import Subway from './Subway';
 import Station from './Station';
-import SvgDefsContext, { useDefIds } from './SvgDefsContext';
+
 
 const styles = {
   spacing: 50,
@@ -128,103 +128,64 @@ const Board = React.forwardRef(({
   const [left, top] = [minX, minY].map(r => r * styles.spacing - padding);
   const viewBox = [left, top, right - left, bottom - top];
 
-  const svgDefs = useDefIds(['faint-drop-shadow', 'lighten', 'lighting']);
-  const {id} = svgDefs;
-  return <SvgDefsContext.Provider value={svgDefs}>
-    <svg 
-      className='Board'
-      version='1.1'
-      baseProfile='full' 
-      width='100%'
-      height='100%'
-      viewBox={viewBox} 
-      xmlns='http://www.w3.org/2000/svg'
+  return <svg 
+    className='Board'
+    version='1.1'
+    baseProfile='full' 
+    width='100%'
+    height='100%'
+    viewBox={viewBox} 
+    xmlns='http://www.w3.org/2000/svg'
+  >
+
+    <g 
+      ref={subwaysRef}
+      tabIndex={-1}
+      className='subways'
+      role='radiogroup'
     >
-      <defs>
+      <title>Subway Select</title>
+      {subways.map(subway => {
+        const windowValues = subwayWindows?.[subway.name] ?? [];
+        const checked = selectedSubway === subway.name ? 'mixed' : 'false';
+        return <Subway 
+          key={subway.name}
+          styles={styles}
+          subway={subway}
+          windowValues={windowValues}
+          edgeNames={edgeNames}
+          checked={checked}
+          disabled={subwaySelectDisabled || (subwayWindows?.[subway.name]?.length ?? 0) >= subway.windows}
+          onClick={(event) => onSubwayClick?.(subway.name, event)}
+        />;
+      })}
+    </g>
 
-        <filter id="subway-hover" x="-100%" y="-100%" width="300%" height="300%">
-            <feBlend in="SourceGraphic" mode="hard-light" />
-        </filter>
-
-        <filter id="subway-label-hover" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur result="blurOut" in="offOut" stdDeviation="6" />
-          <feBlend in="SourceGraphic" in2="blurOut" mode="hard-light" />
-        </filter>
-
-        <animate 
-          href="#subway-label-hover"
-          id="asdf" 
-          attributeName="stdDeviation"
-          from="0"
-          to="10"
-          dur="1s"
-          fill="freeze"
+    <g
+      ref={stationsRef}
+      // tabIndex={-1}
+      className='stations'
+      role='radiogroup'
+    >
+      <title>Station Select</title>
+      {Array.from(stationRefs, ([position, ref]) => {
+        const checked = stationCheckValues.get(position) ?? 'false';
+        const transfer = transferSet.get(position);
+        return <Station 
+          key={position}
+          ref={ref}
+          position={position}
+          checked={checked}
+          transfer={transfer}
+          styles={styles}
+          subways={subways}
+          disabled={stationSelectDisabled || checked === 'true'}
+          onClick={(event) => onStationClick?.(position, event)}
         />
+      })}
+    </g>
 
-        <filter id={id('faint-drop-shadow')} x='-30%' y='-30%' width='160%' height='160%'>
-          <feGaussianBlur in='SourceAlpha' stdDeviation='3'/>
-          <feOffset dx='3' dy='2' />
-          <feComponentTransfer>
-            <feFuncA type='linear' slope='0.4'/>
-          </feComponentTransfer>
-          <feBlend in='SourceGraphic' />
-        </filter>
-
-        <filter id={id('lighten')}>
-          <feComponentTransfer>
-            <feFuncR type='linear' slope='1.6' />
-            <feFuncG type='linear' slope='1.6' />
-            <feFuncB type='linear' slope='1.6' />
-          </feComponentTransfer>
-        </filter>
-      </defs>
-
-      <g 
-        ref={subwaysRef}
-        // tabIndex={-1}
-        className='subways'
-        role='radiogroup'
-      >
-        <title>Subway Select</title>
-        {subways.map(subway => 
-          <Subway 
-            key={[subway.name, ...(subwayWindows?.[subway.name] ?? [])]}
-            styles={styles}
-            subway={subway}
-            values={subwayWindows?.[subway.name]}
-            edgeNames={edgeNames}
-            checked={selectedSubway === subway.name}
-            disabled={subwaySelectDisabled || (subwayWindows?.[subway.name]?.length ?? 0) >= subway.windows}
-            onClick={(event) => onSubwayClick?.(subway.name, event)}
-          />
-        )}
-      </g>
-
-      <g
-        ref={stationsRef}
-        // tabIndex={-1}
-        className='stations'
-        role='radiogroup'
-      >
-        <title>Station Select</title>
-        {Array.from(stationRefs, ([position, ref]) => {
-          const checked = stationCheckValues.get(position) ?? 'false';
-          return <Station 
-            key={[...position, checked]}
-            ref={ref}
-            position={position}
-            checked={stationCheckValues.get(position)}
-            transfer={transferSet.get(position)}
-            styles={styles}
-            subways={subways}
-            disabled={stationSelectDisabled || checked === 'true'}
-            onClick={(event) => onStationClick?.(position, event)}
-          />
-        })}
-      </g>
-
-    </svg>
-  </SvgDefsContext.Provider>;
+  </svg>;
 });
 
 export default Board;

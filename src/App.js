@@ -54,14 +54,6 @@ function App() {
       case 'select_station':
         return selectStation(prevState, action);
       case 'draw_card':
-        // return {
-        //   ...prevState,
-        //   selectedSubway: undefined,
-        //   selectedStation: undefined,
-        //   subwaySelectDisabled: false,
-        //   stationSelectDisabled: false,
-        //   numDrawn: (prevState.numDrawn + 1) % (prevState.cards.length + 1)
-        // };
         return drawCard(prevState, action);
       default:
         return { ...prevState};
@@ -69,7 +61,8 @@ function App() {
   }, initalState);
 
   
-  function selectSubway(prevState, action) {const prevIx = prevState.cards.length - prevState.numDrawn;
+  function selectSubway(prevState, action) {
+    const prevIx = prevState.cards.length - prevState.numDrawn;
     const {type: prevType, value: prevValue} = prevIx < prevState.cards.length ? prevState.cards[prevIx] : {};
 
     const isStationFree = ([x, y]) => prevState.checkedStations.findIndex(([a, b]) => a === x && b === y) < 0;
@@ -120,7 +113,6 @@ function App() {
     
     const nextState = {
       ...prevState,
-      subwayWindows: {...prevState.subwayWindows},
       checkedStations: [...prevState.checkedStations, ...prevState.mixedStations],
       mixedStations: [],
       checkedTransfers: [...prevState.checkedTransfers, ...prevState.mixedTransfers],
@@ -130,12 +122,20 @@ function App() {
       subwaySelectDisabled: true,
       stationSelectDisabled: true,
       cardDrawDisabled: true,
-      numDrawn: prevType === "reshuffle" ? 1 : prevState.numDrawn + 1
+      numDrawn: prevState.numDrawn + 1
     };
 
+    if (prevType === "shuffle") {
+      nextState.cards = shuffle(prevState.cards);
+      nextState.numDrawn = 1;
+    }
+
     if (prevState.selectedSubway) {
-      const prevSubwayWindows = prevState.subwayWindows?.[prevState.selectedSubway] ?? [];
-      nextState.subwayWindows[prevState.selectedSubway] = [...prevSubwayWindows, prevValue];
+      const prevSelectedWindows = prevState.subwayWindows?.[prevState.selectedSubway] ?? [];
+      nextState.subwayWindows = {
+        ...prevState.subwayWindows,
+        [prevState.selectedSubway]: [...prevSelectedWindows, prevValue]
+      };
     }
 
     const nextIx = nextState.cards.length - nextState.numDrawn;
@@ -155,7 +155,7 @@ function App() {
   
   function handleDeckDraw(event) {
     event.preventDefault();
-    dispatch({ type: 'draw_card' });
+    dispatch({type: 'draw_card'});
   }
 
   function handleStationClick(position, event) {

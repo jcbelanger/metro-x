@@ -1,7 +1,7 @@
 [
 	{
 		"name": "A",
-		"windows": 2,
+		"numWindows": 2,
 		"routeCompletionBonus": [2, 1],
 		"color": "#d11e29",
 		"trainCar": [-2.5, 0],
@@ -21,7 +21,7 @@
 	},
 	{
 		"name": "B",
-		"windows": 2,
+		"numWindows": 2,
 		"routeCompletionBonus": [4, 2],
 		"color": "#f2801e",
 		"trainCar": [-2.5, 1.5],
@@ -44,7 +44,7 @@
 	},
 	{
 		"name": "C",
-		"windows": 3,
+		"numWindows": 3,
 		"routeCompletionBonus": [7, 5],
 		"color": "#e8549b",
 		"trainCar": [-2.5, 3],
@@ -67,7 +67,7 @@
 	},
 	{
 		"name": "D",
-		"windows": 3,
+		"numWindows": 3,
 		"routeCompletionBonus": [5, 3],
 		"color": "#83c143",
 		"trainCar": [-2.5, 4],
@@ -92,7 +92,7 @@
 	},
 	{
 		"name": "E",
-		"windows": 3,
+		"numWindows": 3,
 		"routeCompletionBonus": [4, 2],
 		"color": "#fbb418",
 		"trainCar": [-2.5, 5],
@@ -116,7 +116,7 @@
 	},
 	{
 		"name": "F",
-		"windows": 2,
+		"numWindows": 2,
 		"routeCompletionBonus": [4, 2],
 		"color": "#8051a2",
 		"trainCar": [-2.5, 6],
@@ -136,7 +136,7 @@
 	},
 	{
 		"name": "G",
-		"windows": 2,
+		"numWindows": 2,
 		"routeCompletionBonus": [5, 3],
 		"color": "#008bd4",
 		"trainCar": [-2.5, 7],
@@ -158,7 +158,7 @@
 	},
 	{
 		"name": "H",
-		"windows": 3,
+		"numWindows": 3,
 		"routeCompletionBonus": [6, 4],
 		"color": "#586264",
 		"trainCar": [-2.5, 8],
@@ -181,7 +181,7 @@
 	},
 	{
 		"name": "I",
-		"windows": 3,
+		"numWindows": 3,
 		"routeCompletionBonus": [4, 2],
 		"color": "#008574",
 		"trainCar": [-2.5, 9],
