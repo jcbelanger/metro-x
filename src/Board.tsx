@@ -127,7 +127,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
   const stationRefs = new NestedMap();
   for (const subway of subways) {
     for (const xy of subway.route) {
-      stationRefs.set(xy, (prev:any) => prev, () => React.createRef<StationRef>());
+      stationRefs.set(xy, (prev:React.RefObject<StationRef>) => prev, () => React.createRef<StationRef>());
     }
   }
 
@@ -198,7 +198,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
         const checked = stationCheckValues.get(position) ?? false;
         const transfer = transferSet.get(position) ?? false;
         return <Station 
-          key={position.toString()}
+          key={position.join(',')}
           ref={ref}
           position={position as [number, number]}
           checked={checked as boolean}

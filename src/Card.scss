@@ -71,10 +71,8 @@
 
     @each $type, $color in $card-colors {
         &.#{$type}-card {
-            .front {
-                .card-bg {
-                    fill: $color;
-                }
+            .card-bg {
+                fill: $color;
             }
         }
     }

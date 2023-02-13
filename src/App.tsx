@@ -1,6 +1,6 @@
 import './App.scss';
 
-import React, { useRef, useReducer } from 'react';
+import React, { useRef, useReducer, useId } from 'react';
 import Board, { BoardRef } from './Board';
 import CardMat, { DeckRef } from './CardMat';
 import useMatchMediaQuery from './MatchMedia';
@@ -52,14 +52,11 @@ type AppState = {
 };
 
 function App() {
-  const subways = AppData.MetroCity;
-
   const deckRef = useRef<DeckRef>(null);
   const boardRef = useRef<BoardRef>(null);
-  const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 55rem)', [subways]);
 
   const initalState:AppState = {
-    subways,
+    subways: AppData.TubeTown,
     windows: {},
     previewWindows: {},
     transfers: [],
@@ -88,7 +85,6 @@ function App() {
     }
   }, initalState);
 
-  
   function selectSubway(prevState:AppState, action:SelectSubwayEvent):AppState {
     const prevIx = prevState.cards.length - prevState.numDrawn;
     if (prevIx >= prevState.cards.length) return prevState;
@@ -96,7 +92,7 @@ function App() {
 
 
     const isStationFree = ([x, y]: [number, number]):boolean => prevState.stations.findIndex(([a, b]) => a === x && b === y) < 0;
-    const nextSubway = subways.find(subway => subway.name === action.name);
+    const nextSubway = prevState.subways.find(subway => subway.name === action.name);
     if (!nextSubway) return prevState;
     const nextFreeIx = nextSubway?.route?.findIndex(isStationFree) ?? 0;
     
@@ -155,33 +151,35 @@ function App() {
       cardDrawDisabled: true,
       numDrawn: prevState.numDrawn + 1
     };
-
-    const nextIx = nextState.cards.length - nextState.numDrawn;
-    if (nextIx >= nextState.cards.length) return nextState;
-    const nextCard = nextState.cards[nextIx];
-
-    deckRef.current?.blur();
-    if (nextCard.type === AppData.CardType.FREE) {
-      nextState.stationSelectDisabled = false;
-      boardRef.current?.stations()?.focus();
-    } else {
-      nextState.subwaySelectDisabled = false;
-      boardRef.current?.subways()?.focus();
-    }
     
     const prevIx = prevState.cards.length - prevState.numDrawn;
-    if (prevIx >= prevState.cards.length) return nextState;
-    const prevCard = prevState.cards[prevIx];
+    if (prevIx < prevState.cards.length) {
+      const prevCard = prevState.cards[prevIx];
 
-    if (prevCard.type === AppData.CardType.RESHUFFLE) {
-      nextState.cards = shuffle(prevState.cards);
-      nextState.numDrawn = 1;
+      if (prevCard.type === AppData.CardType.RESHUFFLE) {
+        nextState.cards = shuffle(prevState.cards);
+        nextState.numDrawn = 1;
+      }
+  
+      if (prevState.selectedSubway !== undefined) {
+        const prevWindows = prevState.windows[prevState.selectedSubway] ?? [];
+        const prevPreviewWindows = prevState.previewWindows[prevState.selectedSubway] ?? [];
+        nextState.windows[prevState.selectedSubway] = [...prevWindows, ...prevPreviewWindows];
+      }
     }
 
-    if (prevState.selectedSubway !== undefined) {
-      const prevWindows = prevState.windows[prevState.selectedSubway] ?? [];
-      const prevPreviewWindows = prevState.previewWindows[prevState.selectedSubway] ?? [];
-      nextState.windows[prevState.selectedSubway] = [...prevWindows, ...prevPreviewWindows];
+    const nextIx = nextState.cards.length - nextState.numDrawn;
+    if (nextIx < nextState.cards.length) {
+      const nextCard = nextState.cards[nextIx];
+
+      deckRef.current?.blur();
+      if (nextCard.type === AppData.CardType.FREE) {
+        nextState.stationSelectDisabled = false;
+        boardRef.current?.stations()?.focus();
+      } else {
+        nextState.subwaySelectDisabled = false;
+        boardRef.current?.subways()?.focus();
+      }
     }
 
     return nextState;
@@ -202,32 +200,50 @@ function App() {
     dispatch({type: DispatchEventType.SELECT_SUBWAY, name});
   }
 
-  return <div className='App'>
-    <Board
-      ref={boardRef} 
-      subways={state.subways}
-      windows={state.windows}
-      stations={state.stations}
-      transfers={state.transfers}
-      previewWindows={state.previewWindows}
-      previewStations={state.previewStations}
-      previewTransfers={state.previewTransfers}
-      subwaySelectDisabled={state.subwaySelectDisabled}
-      stationSelectDisabled={state.stationSelectDisabled}
-      selectedSubway={state.selectedSubway}
-      selectedStation={state.selectedStation}
-      onSubwayClick={handleSubwayClick}
-      onStationClick={handleStationClick}
-    />
-    <CardMat
-      ref={deckRef}
-      landscape={!isLandscape}
-      cards={state.cards}
-      numDrawn={state.numDrawn}
-      cardDrawDisabled={state.cardDrawDisabled}
-      onDeckDraw={handleDeckDraw}
-    />
+  const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 55rem)', [state.subways]);
+  const id = useId();
+  const subwayMapId = id + '-subway-map-select';
+
+
+  return <>
+   {/* <div className='map-select'>
+      <label htmlFor={subwayMapId}>Map</label>
+      <select id={subwayMapId}>
+        {AppData.subwayMaps.map(({name, subways}) => 
+          <option 
+            key={name}
+            value={name}
+          >{name}</option>
+        )}
+      </select>
+    </div> */}
+    <div className='App'>
+      <Board
+        ref={boardRef} 
+        subways={state.subways}
+        windows={state.windows}
+        stations={state.stations}
+        transfers={state.transfers}
+        previewWindows={state.previewWindows}
+        previewStations={state.previewStations}
+        previewTransfers={state.previewTransfers}
+        subwaySelectDisabled={state.subwaySelectDisabled}
+        stationSelectDisabled={state.stationSelectDisabled}
+        selectedSubway={state.selectedSubway}
+        selectedStation={state.selectedStation}
+        onSubwayClick={handleSubwayClick}
+        onStationClick={handleStationClick}
+      />
+      <CardMat
+        ref={deckRef}
+        landscape={!isLandscape}
+        cards={state.cards}
+        numDrawn={state.numDrawn}
+        cardDrawDisabled={state.cardDrawDisabled}
+        onDeckDraw={handleDeckDraw}
+      />
   </div>;
+  </>
 }
 
 export default App;
