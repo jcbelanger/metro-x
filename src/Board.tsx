@@ -1,9 +1,11 @@
 import './Board.scss';
+
 import React, { useImperativeHandle, useRef } from 'react';
 import { zip } from './utils';
-import NestedMap from './nested';
+import NestedMap from './NestedMap';
 import Subway from './Subway';
-import Station from './Station';
+import Station, { StationRef } from './Station';
+import * as AppData from './AppData';
 
 
 const styles = {
@@ -62,7 +64,28 @@ const styles = {
   }
 };
 
-const Board = React.forwardRef(({
+export type BoardRef = {
+  subways: () => SVGGElement | null,
+  stations: () => SVGGElement | null
+};
+
+export type BoardProps = {
+  subways: AppData.Subway[];
+  windows: Record<string, (string | number)[]>;
+  previewWindows: Record<string, (string | number)[]>;
+  transfers: any[];
+  previewTransfers: [number, number][];
+  stations: [number, number][],
+  previewStations: [number, number][],
+  selectedSubway?: string,
+  selectedStation?: [number, number],
+  subwaySelectDisabled: boolean,
+  stationSelectDisabled: boolean,
+  onSubwayClick?: (label:string, event:React.UIEvent) => void
+  onStationClick?: (position:[number, number], event:React.UIEvent) => void
+};
+
+const Board = React.forwardRef<BoardRef, BoardProps>(({
   subways, 
   windows, 
   stations,
@@ -77,25 +100,25 @@ const Board = React.forwardRef(({
   onStationClick
 }, ref) => {
 
-  const subwaysRef = useRef();
-  const stationsRef = useRef();
 
   const stationCheckValues = new NestedMap();
   for (const checkedStation of stations) {
-    stationCheckValues.set(checkedStation, prev => prev, () => 'true');
+    stationCheckValues.set(checkedStation, (prev:any) => prev, () => true);
   }
   for (const mixedStation of previewStations) {
-    stationCheckValues.set(mixedStation, prev => 'mixed', () => 'mixed');
+    stationCheckValues.set(mixedStation, () => 'mixed', () => 'mixed');
   }
 
   const transferSet = new NestedMap();
   for (const checkedTransfer of transfers) {
-    transferSet.set(checkedTransfer, prev => true, () => true);
+    transferSet.set(checkedTransfer, () => true, () => true);
   }
   for (const mixedTransfer of previewTransfers) {
-    transferSet.set(mixedTransfer, prev => true, () => true);
+    transferSet.set(mixedTransfer, () => 'mixed', () => 'mixed');
   }
   
+  const subwaysRef = useRef<SVGGElement>(null);
+  const stationsRef = useRef<SVGGElement>(null);
   useImperativeHandle(ref, () => ({
     subways: () => subwaysRef.current,
     stations: () => stationsRef.current
@@ -104,7 +127,7 @@ const Board = React.forwardRef(({
   const stationRefs = new NestedMap();
   for (const subway of subways) {
     for (const xy of subway.route) {
-      stationRefs.set(xy, prev => prev, () => React.createRef());
+      stationRefs.set(xy, (prev:any) => prev, () => React.createRef<StationRef>());
     }
   }
 
@@ -113,7 +136,7 @@ const Board = React.forwardRef(({
     const edges = zip(subway.route, subway.route.slice(1));
     for (const edge of edges) {
       const key = edge.flat();
-      edgeNames.set(key, prev => prev.add(subway.name), () => new Set([subway.name]));
+      edgeNames.set(key, (prev:any) => prev.add(subway.name), () => new Set([subway.name]));
     }
   }
 
@@ -135,7 +158,7 @@ const Board = React.forwardRef(({
     baseProfile='full' 
     width='100%'
     height='100%'
-    viewBox={viewBox} 
+    viewBox={viewBox.join(' ')} 
     xmlns='http://www.w3.org/2000/svg'
   >
 
@@ -149,7 +172,7 @@ const Board = React.forwardRef(({
       {subways.map(subway => {
         const windowValues = windows?.[subway.name];
         const isWindowsFull = (windowValues?.length ?? 0) >= subway.numWindows;
-        const checked = selectedSubway === subway.name ? 'mixed' : 'false';
+        const checked = selectedSubway === subway.name ? 'mixed' : false;
         return <Subway 
           key={subway.name}
           styles={styles}
@@ -159,7 +182,7 @@ const Board = React.forwardRef(({
           edgeNames={edgeNames}
           checked={checked}
           disabled={subwaySelectDisabled || isWindowsFull}
-          onClick={(event) => onSubwayClick?.(subway.name, event)}
+          onClick={(event:React.UIEvent) => onSubwayClick?.(subway.name, event)}
         />;
       })}
     </g>
@@ -172,18 +195,17 @@ const Board = React.forwardRef(({
     >
       <title>Station Select</title>
       {Array.from(stationRefs, ([position, ref]) => {
-        const checked = stationCheckValues.get(position) ?? 'false';
-        const transfer = transferSet.get(position);
+        const checked = stationCheckValues.get(position) ?? false;
+        const transfer = transferSet.get(position) ?? false;
         return <Station 
-          key={position}
+          key={position.toString()}
           ref={ref}
-          position={position}
-          checked={checked}
-          transfer={transfer}
+          position={position as [number, number]}
+          checked={checked as boolean}
+          transfer={transfer as boolean}
           styles={styles}
-          subways={subways}
-          disabled={stationSelectDisabled || checked === 'true'}
-          onClick={(event) => onStationClick?.(position, event)}
+          disabled={stationSelectDisabled || checked as boolean}
+          onClick={(event:React.UIEvent) => onStationClick?.(position as [number, number], event)}
         />
       })}
     </g>

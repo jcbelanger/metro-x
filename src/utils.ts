@@ -1,4 +1,4 @@
-function* takeWhile(iterable, predicate) {
+function* takeWhile<T>(iterable:Iterable<T>, predicate:(value:T) => boolean):Iterable<T> {
     for (const value of iterable) {
         if (predicate(value)) {
             yield value;
@@ -8,7 +8,7 @@ function* takeWhile(iterable, predicate) {
     }
 }
 
-function shuffle(input) {
+function shuffle<T>(input: T[]): T[] {
     const output = [...input];
     for (let i = input.length - 1; i >= 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -17,7 +17,7 @@ function shuffle(input) {
     return output;
 }
 
-function zip(...iterables) {
+function zip<T>(...iterables:Iterable<T>[]):Iterable<T[]> {
     const iters = iterables.map(iterable => iterable[Symbol.iterator]());
     return {
         [Symbol.iterator]() {
@@ -34,14 +34,14 @@ function zip(...iterables) {
     };
 }
   
-function* rangeMap(n, fn) {
+function* rangeMap<T>(n:number, fn:(i:number) => T):Iterable<T> {
     for (let i = 0; i < n; i++) {
         yield fn(i);
     }
 }
 
-function comparator(...keys) {
-    return (a, b) => {
+function comparator<T>(...keys:((x:T) => number)[]): (a:T, b:T) => number {
+    return (a:T, b:T):number => {
         for (const key of keys) {
             const compare = key(a) - key(b);
             if (compare !== 0) {

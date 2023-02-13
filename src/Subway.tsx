@@ -1,18 +1,32 @@
 import './Subway.scss';
+import React from 'react';
 import { rangeMap, zip } from './utils';
 import { ariaCheckbox } from './Aria';
+import * as AppData from './AppData';
 import classNames from 'classnames';
+import NestedMap from './NestedMap';
 
-function Subway({
+export type SubwayProps = {
+  subway: AppData.Subway,
+  edgeNames: NestedMap,
+  styles: any,
+  windows?: (number | string)[],
+  previewWindows?: (number | string)[],
+  checked?: boolean | 'mixed',
+  disabled?: boolean,
+  onClick?: (event:React.UIEvent) => void
+};
+
+export const Subway:React.FC<SubwayProps> = ({
   subway, 
+  edgeNames,
+  styles,
   windows=[],
   previewWindows=[],
-  edgeNames,
-  styles, 
-  onClick, 
   checked=false,
-  disabled=true
-}) {
+  disabled=true,
+  onClick
+}) => {
   const {
     spacing,
     route: {
@@ -85,7 +99,7 @@ function Subway({
   const trainCarPos = [trainCarCX, trainCarCY].map(d => d / spacing);
   
   const path = [trainCarPos, ...subway.route]
-  const edges = zip(path, path.slice(1));
+  const edges = zip(path, path.slice(1)) as Iterable<[[number, number], [number, number]]>
 
   const routePoints = [...edges].flatMap((edge, edgeIx) => {
     const [[x1, y1], [x2, y2]] = edge.map(pos => pos.map(d => d * spacing));
@@ -152,8 +166,8 @@ function Subway({
 
   return <g 
     className='subway'
-    style={{ '--color': subway.color }}
-    {...ariaCheckbox({
+    style={{'--color': subway.color} as any}
+    {...ariaCheckbox<SVGGElement>({
       checked: checked,
       disabled: disabled, 
       onClick: onClick
@@ -164,7 +178,7 @@ function Subway({
         <title>Subway Route: {subway.name}</title>
         <polyline
           className='route'
-          points={routePoints}
+          points={routePoints.flat().join(' ')}
           strokeWidth={routeStrokeWidth}
           strokeLinejoin='round'
           strokeLinecap='round'
@@ -354,6 +368,6 @@ function Subway({
         </g>
       </g>
     </g>;
-}
+};
 
 export default Subway;

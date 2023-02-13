@@ -2,13 +2,25 @@ import './CardMat.scss';
 import React from 'react';
 import Card from './Card';
 import {ariaButton} from './Aria';
+import * as AppData from './AppData';
 
-const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDrawDisabled=false, onDeckDraw}, ref) => {
+
+export type DeckRef = SVGGElement;
+
+export type CardMapProps = {
+  landscape:boolean
+  cards: AppData.Card[]
+  numDrawn: number,
+  cardDrawDisabled: boolean
+  onDeckDraw?: (event:React.UIEvent) => void
+};
+
+const CardMat = React.forwardRef<DeckRef, CardMapProps>(({cards=[], landscape=true, numDrawn=0, cardDrawDisabled=false, onDeckDraw}, ref) => {
   const majorAxis = landscape ? 0 : 1;
   const minorAxis = 1 - majorAxis;
-  const [majorPos, minorPos] = [majorAxis, minorAxis].map(axis => ['x', 'y'][axis]);
-  // eslint-disable-next-line no-unused-vars
-  const [majorLen, minorLen] = [majorAxis, minorAxis].map(axis => ['width', 'height'][axis]);
+  const [majorPos, minorPos] = [majorAxis, minorAxis].map(axis => ['x', 'y'][axis]) as ('x' | 'y')[];
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const [majorLen, minorLen] = [majorAxis, minorAxis].map(axis => ['width', 'height'][axis]) as ('width' | 'height')[];
 
   const cardDims = {width: 225, height:350};
   const gap = 50;
@@ -33,15 +45,15 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDra
       baseProfile='full' 
       width='100%'
       height='100%'
-      viewBox={viewBox} 
+      viewBox={viewBox.join(' ')} 
       xmlns='http://www.w3.org/2000/svg'
   >
     <g
       className='deck'
       ref={ref}
-      {...ariaButton({
+      {...ariaButton<SVGGElement>({
         disabled: cardDrawDisabled, 
-        onClick: event => onDeckDraw?.(event)
+        onClick: (event:React.UIEvent<SVGGElement>) => onDeckDraw?.(event)
       })}
     >
       <title>Draw next card</title>
@@ -71,8 +83,8 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDra
           revealed={false}
           x={deckPos.x + deckOffset.x * ix}
           y={deckPos.y + deckOffset.y * ix}
+          card={card}
           {...cardDims}
-          {...card} 
         />
       )}
     </g>
@@ -82,10 +94,10 @@ const CardMat = React.forwardRef(({cards=[], landscape=true, numDrawn=0, cardDra
         <Card
           key={ix}
           revealed={true}
-          x={activePos.x + deckOffset.x*ix}
-          y={activePos.y + deckOffset.y*ix}
+          x={activePos.x + deckOffset.x * ix}
+          y={activePos.y + deckOffset.y * ix}
+          card={card}
           {...cardDims}
-          {...card} 
         />
       )}
     </g>
