@@ -1,6 +1,6 @@
 import './App.scss';
 
-import React, { useRef, useReducer, useId } from 'react';
+import React, { useRef, useReducer } from 'react';
 import Board, { BoardRef } from './Board';
 import CardMat, { DeckRef } from './CardMat';
 import useMatchMediaQuery from './MatchMedia';
@@ -201,22 +201,8 @@ function App() {
   }
 
   const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 55rem)', [state.subways]);
-  const id = useId();
-  const subwayMapId = id + '-subway-map-select';
-
 
   return <>
-   {/* <div className='map-select'>
-      <label htmlFor={subwayMapId}>Map</label>
-      <select id={subwayMapId}>
-        {AppData.subwayMaps.map(({name, subways}) => 
-          <option 
-            key={name}
-            value={name}
-          >{name}</option>
-        )}
-      </select>
-    </div> */}
     <div className='App'>
       <Board
         ref={boardRef} 
