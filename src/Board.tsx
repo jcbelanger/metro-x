@@ -1,6 +1,7 @@
 import './Board.scss';
 
 import React, { useImperativeHandle, useRef } from 'react';
+import Immutable from 'immutable';
 import { zip } from './utils';
 import NestedMap from './NestedMap';
 import Subway from './Subway';
@@ -70,9 +71,9 @@ export type BoardRef = {
 };
 
 export type BoardProps = {
-  subways: AppData.Subway[];
-  windows: Record<string, (string | number)[]>;
-  previewWindows: Record<string, (string | number)[]>;
+  subways: Immutable.List<AppData.Subway>;
+  windows: Immutable.Map<string, (string | number)[]>;
+  previewWindows: Immutable.Map<string, (string | number)[]>;
   transfers: any[];
   previewTransfers: [number, number][];
   stations: [number, number][],
@@ -170,7 +171,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
     >
       <title>Subway Select</title>
       {subways.map(subway => {
-        const windowValues = windows?.[subway.name];
+        const windowValues = windows.get(subway.name);
         const isWindowsFull = (windowValues?.length ?? 0) >= subway.numWindows;
         const checked = selectedSubway === subway.name ? 'mixed' : false;
         return <Subway 
@@ -178,7 +179,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
           styles={styles}
           subway={subway}
           windows={windowValues}
-          previewWindows={previewWindows?.[subway.name]}
+          previewWindows={previewWindows?.get(subway.name)}
           edgeNames={edgeNames}
           checked={checked}
           disabled={subwaySelectDisabled || isWindowsFull}
