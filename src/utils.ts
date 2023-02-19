@@ -1,3 +1,7 @@
+
+import { List } from 'immutable';
+
+
 function* takeWhile<T>(iterable:Iterable<T>, predicate:(value:T) => boolean):Iterable<T> {
     for (const value of iterable) {
         if (predicate(value)) {
@@ -8,13 +12,15 @@ function* takeWhile<T>(iterable:Iterable<T>, predicate:(value:T) => boolean):Ite
     }
 }
 
-function shuffle<T>(input: T[]): T[] {
-    const output = [...input];
-    for (let i = input.length - 1; i >= 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [output[i], output[j]] = [output[j], output[i]]
-    }
-    return output;
+function shuffle<T>(input: List<T>): List<T> {
+    return input.withMutations(output => {
+        for (let i = output.size - 1; i >= 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp:T = output.get(i) as T;
+            output.set(i, output.get(j) as T);
+            output.set(j, temp);
+        }
+    });
 }
 
 function zip<T>(...iterables:Iterable<T>[]):Iterable<T[]> {

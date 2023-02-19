@@ -1,5 +1,7 @@
 import './CardMat.scss';
+
 import React from 'react';
+import { List } from 'immutable';
 import Card from './Card';
 import {ariaButton} from './Aria';
 import * as AppData from './AppData';
@@ -9,13 +11,13 @@ export type DeckRef = SVGGElement;
 
 export type CardMapProps = {
   landscape:boolean
-  cards: AppData.Card[]
+  cards: List<AppData.Card>
   numDrawn: number,
   cardDrawDisabled: boolean
   onDeckDraw?: (event:React.UIEvent) => void
 };
 
-const CardMat = React.forwardRef<DeckRef, CardMapProps>(({cards=[], landscape=true, numDrawn=0, cardDrawDisabled=false, onDeckDraw}, ref) => {
+const CardMat = React.forwardRef<DeckRef, CardMapProps>(({cards=List(), landscape=true, numDrawn=0, cardDrawDisabled=false, onDeckDraw}, ref) => {
   const majorAxis = landscape ? 0 : 1;
   const minorAxis = 1 - majorAxis;
   const [majorPos, minorPos] = [majorAxis, minorAxis].map(axis => ['x', 'y'][axis]) as ('x' | 'y')[];
@@ -26,7 +28,7 @@ const CardMat = React.forwardRef<DeckRef, CardMapProps>(({cards=[], landscape=tr
   const gap = 50;
 
   const deckOffset = {x: 2, y: 1}
-  const maxNumOffsets = Math.max(0, cards.length - 1);
+  const maxNumOffsets = Math.max(0, cards.size - 1);
   const maxDeckOffset = Object.fromEntries(Object.entries(deckOffset).map(([k, v]) => [k, v * maxNumOffsets]));
 
   const viewPad = 30;
@@ -77,7 +79,7 @@ const CardMat = React.forwardRef<DeckRef, CardMapProps>(({cards=[], landscape=tr
 
       </g>
       
-      {cards.slice(0, cards.length - numDrawn).map((card, ix) =>
+      {cards.slice(0, cards.size - numDrawn).map((card, ix) =>
         <Card
           key={ix}
           revealed={false}
@@ -90,7 +92,7 @@ const CardMat = React.forwardRef<DeckRef, CardMapProps>(({cards=[], landscape=tr
     </g>
 
     <g>
-      {cards.slice(cards.length - numDrawn, cards.length).reverse().map((card, ix) => 
+      {cards.slice(cards.size - numDrawn, cards.size).reverse().map((card, ix) => 
         <Card
           key={ix}
           revealed={true}

@@ -1,3 +1,6 @@
+import { List } from 'immutable';
+
+
 export enum CardType {
     NUMBER='number',
     RESHUFFLE='reshuffle',
@@ -42,7 +45,7 @@ export type Card =
     | TransferCard
     | SkipCard;
 
-export const NewDeck:Card[] = [
+export const NewDeck:List<Card> = List([
 	{type: CardType.NUMBER, value: 3},
 	{type: CardType.NUMBER, value: 3},
 	{type: CardType.NUMBER, value: 3},
@@ -58,7 +61,7 @@ export const NewDeck:Card[] = [
 	{type: CardType.SKIP, label: 'Skip', value: 2},
 	{type: CardType.SKIP, label: 'Skip', value: 2},
 	{type: CardType.SKIP, label: 'Skip', value: 3}
-];
+]);
 
 export type Subway = {
     name: string,
