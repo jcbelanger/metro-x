@@ -71,10 +71,24 @@ export type LocationProps = {
 	x: number,
 	y: number
 }
-
+  
 export class Location extends Immutable.Record<LocationProps>({
 	x: 0,
 	y: 0
+}) {
+	xy():Immutable.List<number> {
+		return Immutable.List([this.x, this.y]);
+	}
+}
+
+export type EdgeProps = {
+	start:Location,
+	stop:Location
+};
+  
+export class Edge extends Immutable.Record<EdgeProps>({
+	start: new Location(),
+	stop: new Location()
 }) {}
 
 export type SubwayProps = {

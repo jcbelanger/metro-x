@@ -2,11 +2,10 @@ import './Board.scss';
 
 import React, { useImperativeHandle, useRef } from 'react';
 import Immutable from 'immutable';
-import { zip } from './utils';
 import NestedMap from './NestedMap';
 import {Subway as SubwayElement} from './Subway';
 import Station, { StationRef } from './Station';
-import {Location, Subway, Window} from './AppData';
+import {Location, Subway, Window, Edge} from './AppData';
 
 
 const styles = {
@@ -71,10 +70,10 @@ export type BoardRef = {
 };
 
 export type BoardProps = {
-  subways: Immutable.List<Subway>;
-  windows: Immutable.Map<string, Immutable.List<Window>>;
-  previewWindows: Immutable.Map<string, Immutable.List<Window>>;
-  transfers: Immutable.Set<Location>;
+  subways: Immutable.Map<String, Subway>,
+  windows: Immutable.Map<string, Immutable.List<Window>>,
+  previewWindows: Immutable.Map<string, Immutable.List<Window>>,
+  transfers: Immutable.Set<Location>,
   previewTransfers: Immutable.Set<Location>;
   stations: Immutable.Set<Location>,
   previewStations: Immutable.Set<Location>,
@@ -82,7 +81,7 @@ export type BoardProps = {
   selectedStation?: Location,
   subwaySelectDisabled: boolean,
   stationSelectDisabled: boolean,
-  onSubwayClick?: (label:string, event:React.UIEvent) => void
+  onSubwayClick?: (label:string, event:React.UIEvent) => void,
   onStationClick?: (position:Location, event:React.UIEvent) => void
 };
 
@@ -102,13 +101,13 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
 }, ref) => {
 
 
-  const stationCheckValues = Immutable.Set<Location>();
-  for (const checkedStation of stations) {
-    stationCheckValues.set(checkedStation, (prev:any) => prev, () => true);
-  }
-  for (const mixedStation of previewStations) {
-    stationCheckValues.set(mixedStation, () => 'mixed', () => 'mixed');
-  }
+  // const stationCheckValues = Immutable.Set<Location>();
+  // for (const checkedStation of stations) {
+  //   stationCheckValues.set(checkedStation, (prev:any) => prev, () => true);
+  // }
+  // for (const mixedStation of previewStations) {
+  //   stationCheckValues.set(mixedStation, () => 'mixed', () => 'mixed');
+  // }
 
   const transferSet = new NestedMap();
   for (const checkedTransfer of transfers) {
@@ -126,7 +125,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
   }));
   
   const stationRefs = Immutable.Map<Location, React.RefObject<StationRef>>();
-  for (const subway of subways) {
+  for (const subway of subways.valueSeq()) {
     for (const station of subway.route) {
       stationRefs.update(station, old => {
         if (old) {
@@ -137,21 +136,28 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
     }
   }
 
-  const edgeNames = new NestedMap();
-  for (const subway of subways) {
-    const edges = zip(subway.route, subway.route.slice(1));
-    for (const edge of edges) {
-      const key = edge.flat();
-      edgeNames.set(key, (prev:any) => prev.add(subway.name), () => new Set([subway.name]));
-    }
-  }
+  const overlapEntries:Iterable<[Edge, Immutable.Set<string>]> = subways.valueSeq().flatMap(subway => {
+    const starts = subway.route.toSeq();
+    const stops = starts.skip(1); 
+    const edgePairs = starts.zip(stops) as Immutable.Seq.Indexed<[Location, Location]>;
+    return edgePairs.map(([start, stop]) => [new Edge({start, stop}), Immutable.Set<string>([subway.name])]);
+  });
+  
+  const emptyGraph = Immutable.Map<Edge, Immutable.Set<string>>();
+  const edgeOverlaps = emptyGraph.withMutations(mutGraph => {
+    return mutGraph.mergeWith((oldVal, newVal) => oldVal.union(newVal), overlapEntries);
+  });
+
 
   const padding = 30;
-  const points:Immutable.List<Location> = subways.flatMap(({route, trainCar:{x, y}}) => route.push(
-    new Location({x:x-2, y}), //label
-    new Location({x:x-1, y}), //points
-    new Location({x, y}) //left window
-  ));
+  const points = subways
+    .valueSeq()
+    .flatMap(({route, trainCar:{x, y}}) => route.push(
+      new Location({x:x-2, y}), //label
+      new Location({x:x-1, y}), //points
+      new Location({x, y}) //left window
+    ))
+    .toList();
   const xs = points.map(({x}) => x);
   const ys = points.map(({y}) => y);
   const maxX = Math.max(...xs);
@@ -172,7 +178,6 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
     viewBox={viewBox.join(' ')} 
     xmlns='http://www.w3.org/2000/svg'
   >
-
     <g 
       ref={subwaysRef}
       tabIndex={-1}
@@ -190,7 +195,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
           subway={subway}
           windows={windowValues}
           previewWindows={previewWindows?.get(subway.name)}
-          edgeNames={edgeNames}
+          edgeOverlaps={edgeOverlaps}
           checked={checked}
           disabled={subwaySelectDisabled || isWindowsFull}
           onClick={(event:React.UIEvent) => onSubwayClick?.(subway.name, event)}

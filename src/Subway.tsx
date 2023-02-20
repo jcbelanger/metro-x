@@ -1,17 +1,18 @@
 import './Subway.scss';
 import React from 'react';
+import Immutable from 'immutable';
 import { rangeMap, zip } from './utils';
 import { ariaCheckbox } from './Aria';
 import * as AppData from './AppData';
 import classNames from 'classnames';
-import NestedMap from './NestedMap';
+
 
 export type SubwayProps = {
   subway: AppData.Subway,
-  edgeNames: NestedMap,
+  edgeOverlaps: Immutable.Map<AppData.Edge, Immutable.Set<string>>,
   styles: any,
-  windows?: (number | string)[],
-  previewWindows?: (number | string)[],
+  windows?: Immutable.List<AppData.Window>,
+  previewWindows?: Immutable.List<AppData.Window>,
   checked?: boolean | 'mixed',
   disabled?: boolean,
   onClick?: (event:React.UIEvent) => void
@@ -19,10 +20,10 @@ export type SubwayProps = {
 
 export const Subway:React.FC<SubwayProps> = ({
   subway, 
-  edgeNames,
+  edgeOverlaps,
   styles,
-  windows=[],
-  previewWindows=[],
+  windows=Immutable.List(),
+  previewWindows=Immutable.List(),
   checked=false,
   disabled=true,
   onClick
@@ -84,7 +85,7 @@ export const Subway:React.FC<SubwayProps> = ({
     }
   } = styles;
 
-  const [trainCarX, trainCarY] = subway.trainCar.map(d => d * spacing);
+  const [trainCarX, trainCarY] = subway.trainCar.xy().map(d => d * spacing);
 
   const numWindowGaps = Math.max(0, subway.numWindows - 1);
 
@@ -97,9 +98,16 @@ export const Subway:React.FC<SubwayProps> = ({
   const trainCarCX = trainCarLeft + trainCarWidth / 2;
   const trainCarCY = trainCarTop + trainCarHeight / 2;
   const trainCarPos = [trainCarCX, trainCarCY].map(d => d / spacing);
+
   
-  const path = [trainCarPos, ...subway.route]
-  const edges = zip(path, path.slice(1)) as Iterable<[[number, number], [number, number]]>
+  const path = subway.route.unshift(trainCarPos)
+  const starts = subway.route.toSeq();
+  const stops = starts.skip(1); 
+  const edgePairs = starts.zip(stops) as Immutable.Seq.Indexed<[Location, Location]>;
+
+  
+  // const path = [trainCarPos, ...subway.route]
+  // const edges = zip(path, path.slice(1)) as Iterable<[[number, number], [number, number]]>
 
   const routePoints = [...edges].flatMap((edge, edgeIx) => {
     const [[x1, y1], [x2, y2]] = edge.map(pos => pos.map(d => d * spacing));
@@ -136,7 +144,7 @@ export const Subway:React.FC<SubwayProps> = ({
     ];
   });
 
-  const [cx, cy] = subway.trainCar.map(d => d * spacing);
+  const [cx, cy] = subway.trainCar.xy().map(d => d * spacing);
   const left = cx - windowWidth / 2 - trainCarPadX;
   const top = cy - trainCarHeight / 2;
 
@@ -330,14 +338,14 @@ export const Subway:React.FC<SubwayProps> = ({
           </g>
 
           <g className='windows'>
-            {[...rangeMap(subway.numWindows, windowIndex => {
+            {Immutable.Range(0, subway.numWindows).map(windowIndex => {
               const windowLeft = left + trainCarPadX + windowIndex * (windowWidth + windowGap);
               const windowTop = top + trainCarPadY;
               const windowValue = windowIndex < windowValues.length ? windowValues[windowIndex] : undefined;
               return <g 
                 key={windowIndex}
                 className={classNames('window', {
-                  preview: windows.length <= windowIndex && windowIndex < windows.length + previewWindows.length
+                  preview: windows.size <= windowIndex && windowIndex < windows.size + previewWindows.size
                 })}
               >
                 <rect
@@ -363,7 +371,7 @@ export const Subway:React.FC<SubwayProps> = ({
                   dominantBaseline='central'
                 >{windowValue}</text>}
               </g>;
-            })]}
+            })}
           </g>
         </g>
       </g>
