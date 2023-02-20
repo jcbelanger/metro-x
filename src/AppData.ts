@@ -99,8 +99,10 @@ export class Edge extends Immutable.Record<EdgeProps>({
 	}
 }
 
+export type SubwayName = string;
+
 export type SubwayProps = {
-    name: string,
+    name: SubwayName,
     numWindows: number,
     routeCompletionBonus: [number, number],
     color: string,
@@ -124,7 +126,7 @@ export function fromJSON(json:({
 	color: string,
 	trainCar: [number, number],
 	route: [number, number][]
-})[]):Immutable.Map<String, Subway> {
+})[]):Immutable.Map<SubwayName, Subway> {
 	return Immutable.Map(json.map(item => [
 		item.name,
 		new Subway({

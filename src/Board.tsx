@@ -2,9 +2,11 @@ import './Board.scss';
 
 import React, { useImperativeHandle, useRef } from 'react';
 import Immutable from 'immutable';
-import {Subway as SubwayElement} from './Subway';
+import {Subway as SubwayElement, SubwayRef } from './Subway';
 import Station, { StationRef } from './Station';
-import {Location, Subway, Window, Edge} from './AppData';
+import {Location, Subway, SubwayName, Window, Edge} from './AppData';
+
+export type { SubwayRef, StationRef };
 
 
 const styles = {
@@ -69,23 +71,27 @@ export type BoardRef = {
 };
 
 export type BoardProps = {
-  subways: Immutable.Map<String, Subway>,
-  windows: Immutable.Map<string, Immutable.List<Window>>,
-  previewWindows: Immutable.Map<string, Immutable.List<Window>>,
+  subways: Immutable.Map<SubwayName, Subway>,
+  edgeOverlaps: Immutable.Map<Edge, Immutable.Set<SubwayName>>,
+  vertexOverlaps: Immutable.Map<Location, Immutable.Set<SubwayName>>,
+  windows: Immutable.Map<SubwayName, Immutable.List<Window>>,
+  previewWindows: Immutable.Map<SubwayName, Immutable.List<Window>>,
   transfers: Immutable.Set<Location>,
-  previewTransfers: Immutable.Set<Location>;
+  previewTransfers: Immutable.Set<Location>,
   stations: Immutable.Set<Location>,
   previewStations: Immutable.Set<Location>,
-  selectedSubway?: string,
+  selectedSubway?: SubwayName,
   selectedStation?: Location,
   subwaySelectDisabled: boolean,
   stationSelectDisabled: boolean,
-  onSubwayClick?: (label:string, event:React.UIEvent) => void,
-  onStationClick?: (position:Location, event:React.UIEvent) => void
+  onSubwayClick?: (label:SubwayName, ref:React.RefObject<SubwayRef>, event:React.UIEvent) => void,
+  onStationClick?: (position:Location, ref:React.RefObject<StationRef>, event:React.UIEvent) => void
 };
 
 const Board = React.forwardRef<BoardRef, BoardProps>(({
-  subways, 
+  subways,
+  edgeOverlaps,
+  vertexOverlaps,
   windows, 
   stations,
   transfers,
@@ -99,55 +105,12 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
   onStationClick
 }, ref) => {
 
-
-  // const stationCheckValues = Immutable.Set<Location>();
-  // for (const checkedStation of stations) {
-  //   stationCheckValues.set(checkedStation, (prev:any) => prev, () => true);
-  // }
-  // for (const mixedStation of previewStations) {
-  //   stationCheckValues.set(mixedStation, () => 'mixed', () => 'mixed');
-  // }
-
-  // const transferSet = new NestedMap();
-  // for (const checkedTransfer of transfers) {
-  //   transferSet.set(checkedTransfer, () => true, () => true);
-  // }
-  // for (const mixedTransfer of previewTransfers) {
-  //   transferSet.set(mixedTransfer, () => 'mixed', () => 'mixed');
-  // }
-  
   const subwaysRef = useRef<SVGGElement>(null);
   const stationsRef = useRef<SVGGElement>(null);
   useImperativeHandle(ref, () => ({
     subways: () => subwaysRef.current,
     stations: () => stationsRef.current
   }));
-  
-  const emptyStationRefs = Immutable.Map<Location, React.RefObject<StationRef>>();
-  const stationRefs = emptyStationRefs.withMutations(mutStationRefs => {
-    for (const subway of subways.valueSeq()) {
-      for (const station of subway.route) {
-        mutStationRefs = mutStationRefs.update(station, old => {
-          if (old) return old;
-          return React.createRef<StationRef>();
-        });
-      }
-    }
-    return mutStationRefs;
-  });
-
-  const overlapEntries:Iterable<[Edge, Immutable.Set<string>]> = subways.valueSeq().flatMap(subway => {
-    const starts = subway.route.toSeq();
-    const stops = starts.skip(1);
-    const edgePairs = starts.zip(stops) as Immutable.Seq.Indexed<[Location, Location]>;
-    return edgePairs.map(([start, stop]) => [new Edge({start, stop}), Immutable.Set<string>([subway.name])]);
-  });
-  
-  const emptyGraph = Immutable.Map<Edge, Immutable.Set<string>>();
-  const edgeOverlaps = emptyGraph.withMutations(mutGraph => {
-    return mutGraph.mergeWith((oldVal, newVal) => oldVal.union(newVal), overlapEntries);
-  });
-
 
   const padding = 30;
   const points = subways
@@ -186,10 +149,12 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
     >
       <title>Subway Select</title>
       {subways.valueSeq().map(subway => {
+        const ref = React.createRef<SubwayRef>();
         const windowValues = windows.get(subway.name);
         const isWindowsFull = (windowValues?.size ?? 0) >= subway.numWindows;
         const checked = selectedSubway === subway.name ? 'mixed' : false;
         return <SubwayElement 
+          ref={ref}
           key={subway.name}
           styles={styles}
           subway={subway}
@@ -198,7 +163,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
           edgeOverlaps={edgeOverlaps}
           checked={checked}
           disabled={subwaySelectDisabled || isWindowsFull}
-          onClick={(event:React.UIEvent) => onSubwayClick?.(subway.name, event)}
+          onClick={(event:React.UIEvent) => onSubwayClick?.(subway.name, ref, event)}
         />;
       })}
     </g>
@@ -210,19 +175,21 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
       role='radiogroup'
     >
       <title>Station Select</title>
-      {stationRefs
+      {vertexOverlaps
         .toKeyedSeq()
-        .map((ref, position) => {
+        .map((vertexOverlap, position) => {
+          const ref = React.createRef<StationRef>();
           const checked = stations.has(position);
           function handleStationClick(event:React.UIEvent) {
-            onStationClick?.(position, event);
+            onStationClick?.(position, ref, event);
           }
           return <Station 
             key={position.toString()}
             ref={ref}
             position={position}
             checked={previewStations.has(position) ? 'mixed' : checked}
-            transfer={transfers.has(position)}
+            transfer={previewTransfers.has(position) || transfers.has(position)}
+            transferPoints={vertexOverlap.size * 2}
             styles={styles}
             disabled={stationSelectDisabled || checked}
             onClick={handleStationClick}

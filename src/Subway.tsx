@@ -6,9 +6,11 @@ import * as AppData from './AppData';
 import classNames from 'classnames';
 
 
+export type SubwayRef = SVGGElement;
+
 export type SubwayProps = {
   subway: AppData.Subway,
-  edgeOverlaps: Immutable.Map<AppData.Edge, Immutable.Set<string>>,
+  edgeOverlaps: Immutable.Map<AppData.Edge, Immutable.Set<AppData.SubwayName>>,
   styles: any,
   windows?: Immutable.List<AppData.Window>,
   previewWindows?: Immutable.List<AppData.Window>,
@@ -17,7 +19,7 @@ export type SubwayProps = {
   onClick?: (event:React.UIEvent) => void
 };
 
-export const Subway:React.FC<SubwayProps> = ({
+export const Subway = React.forwardRef<SubwayRef, SubwayProps>(({
   subway, 
   edgeOverlaps,
   styles,
@@ -26,7 +28,7 @@ export const Subway:React.FC<SubwayProps> = ({
   checked=false,
   disabled=true,
   onClick
-}) => {
+}, ref) => {
   const {
     spacing,
     route: {
@@ -110,8 +112,8 @@ export const Subway:React.FC<SubwayProps> = ({
     const [rise, run] = [y1 - y2, x1 - x2];
     const [perpRise, perpRun] = [-run, rise];
 
-    const forwardOverlaps = edgeOverlaps.get(edge, Immutable.Set<string>([subway.name]));
-    const backwardOverlaps = edgeOverlaps.get(edge.reverse(), Immutable.Set());
+    const forwardOverlaps = edgeOverlaps.get(edge, Immutable.Set<AppData.SubwayName>([subway.name]));
+    const backwardOverlaps = edgeOverlaps.get(edge.reverse(), Immutable.Set<AppData.SubwayName>());
     const overlaps = forwardOverlaps.union(backwardOverlaps);
     const namesIndex = overlaps.sort().valueSeq().keyOf(subway.name) ?? 0;
 
@@ -168,6 +170,7 @@ export const Subway:React.FC<SubwayProps> = ({
 
   
   return <g 
+    ref={ref}
     className='subway'
     style={{'--color': subway.color} as any}
     {...ariaCheckbox<SVGGElement>({
@@ -371,6 +374,6 @@ export const Subway:React.FC<SubwayProps> = ({
         </g>
       </g>
     </g>;
-};
+});
 
 export default Subway;

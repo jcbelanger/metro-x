@@ -2,10 +2,10 @@ import './App.scss';
 
 import React, { useRef, useReducer } from 'react';
 import Immutable from 'immutable';
-import Board, { BoardRef } from './Board';
+import Board, { BoardRef, StationRef, SubwayRef } from './Board';
 import CardMat, { DeckRef } from './CardMat';
 import useMatchMediaQuery from './MatchMedia';
-import {Location, Subway, Window, Card, CardType, NewDeck, MetroCity} from './AppData';
+import {Location, Subway, SubwayName, Window, Card, CardType, NewDeck, MetroCity, Edge} from './AppData';
 
 
 enum DispatchEventType {
@@ -16,7 +16,7 @@ enum DispatchEventType {
 
 type SelectSubwayEvent = {
   type: DispatchEventType.SELECT_SUBWAY;
-  name: string
+  name: SubwayName
 };
 
 type SelectStationEvent = {
@@ -35,14 +35,14 @@ type DispatchEvent =
 
 
 type AppStateProps = {
-  subways: Immutable.Map<String, Subway>;
-  windows: Immutable.Map<string, Immutable.List<Window>>;
-  previewWindows: Immutable.Map<string, Immutable.List<Window>>;
+  subways: Immutable.Map<SubwayName, Subway>,
+  windows: Immutable.Map<SubwayName, Immutable.List<Window>>,
+  previewWindows: Immutable.Map<SubwayName, Immutable.List<Window>>,
   transfers: Immutable.Set<Location>;
   previewTransfers: Immutable.Set<Location>;
   stations: Immutable.Set<Location>,
   previewStations: Immutable.Set<Location>,
-  selectedSubway?: string,
+  selectedSubway?: SubwayName,
   selectedStation?: Location,
   cardDrawDisabled: boolean,
   subwaySelectDisabled: boolean,
@@ -213,15 +213,46 @@ function App() {
     dispatch({type: DispatchEventType.DRAW_CARD});
   }
 
-  function handleStationClick(position:Location, event:React.UIEvent) {
+  function handleStationClick(position:Location, ref:React.RefObject<StationRef>, event:React.UIEvent) {
     event.preventDefault();
+    ref?.current?.focus();
     dispatch({type: DispatchEventType.SELECT_STATION, position});
   }
 
-  function handleSubwayClick(name:string, event:React.UIEvent) {
+  function handleSubwayClick(name:SubwayName, ref:React.RefObject<SubwayRef>, event:React.UIEvent) {
     event.preventDefault();
+    ref?.current?.focus();
     dispatch({type: DispatchEventType.SELECT_SUBWAY, name});
   }
+
+  function buildSubwayGraphs() {
+    const edgeOverlapEntries:Iterable<[Edge, Immutable.Set<SubwayName>]> = state.subways.valueSeq().flatMap(subway => {
+      const starts = subway.route.toSeq();
+      const stops = starts.skip(1);
+      const edgePairs = starts.zip(stops) as Immutable.Seq.Indexed<[Location, Location]>;
+      return edgePairs.map(([start, stop]) => [new Edge({start, stop}), Immutable.Set<SubwayName>([subway.name])]);
+    });
+    
+    const emptyEdgeOverlaps = Immutable.Map<Edge, Immutable.Set<SubwayName>>();
+    const edgeOverlaps = emptyEdgeOverlaps.withMutations(mutGraph => {
+      return mutGraph.mergeWith((oldVal, newVal) => oldVal.union(newVal), edgeOverlapEntries);
+    });
+    
+    const vertexOverlapEntries:Iterable<[Location, Immutable.Set<SubwayName>]> = state.subways.valueSeq().flatMap(subway => {
+      return subway.route.toSeq().map(station => [station, Immutable.Set<SubwayName>([subway.name])]);
+    });
+
+    const emptyVertexOverlaps = Immutable.Map<Location, Immutable.Set<SubwayName>>();
+    const vertexOverlaps = emptyVertexOverlaps.withMutations(mutGraph => {
+      return mutGraph.mergeWith((oldVal, newVal) => oldVal.union(newVal), vertexOverlapEntries);
+    });
+
+    return {
+      edgeOverlaps,
+      vertexOverlaps
+    };
+  }
+  
 
   const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 55rem)', [state.subways]);
 
@@ -230,6 +261,7 @@ function App() {
       <Board
         ref={boardRef} 
         subways={state.subways}
+        {...buildSubwayGraphs()}
         windows={state.windows}
         stations={state.stations}
         transfers={state.transfers}

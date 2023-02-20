@@ -13,15 +13,17 @@ export type StationProps = {
   disabled: boolean,
   checked: boolean | 'mixed', 
   transfer: boolean,
+  transferPoints?: number,
   onClick?: (event:React.UIEvent) => void
 };
 
 const Station = React.forwardRef<StationRef, StationProps>(({
   position:{x, y}, 
   styles, 
-  disabled=true, 
+  disabled=true,
   checked=false, 
   transfer=false,
+  transferPoints,
   onClick
 }, ref) => {
   const [cx, cy] = [x, y].map(d => d * styles.spacing);
@@ -49,7 +51,7 @@ const Station = React.forwardRef<StationRef, StationProps>(({
       x={cx}
       y={cy}
       textLength={2 * styles.station.radius}
-    >✖</text>}
+    >{transferPoints ?? '✖'}</text>}
     
     <circle
       className='station-border'
