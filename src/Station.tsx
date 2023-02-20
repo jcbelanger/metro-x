@@ -26,61 +26,59 @@ const Station = React.forwardRef<StationRef, StationProps>(({
   transferPoints,
   onClick
 }, ref) => {
+  const styles = React.useContext(AppStylesContext);
 
-  return <AppStylesContext.Consumer>{styles => {
-    const [cx, cy] = [x, y].map(d => d * styles.spacing);
+  const [cx, cy] = [x, y].map(d => d * styles.spacing);
 
-    return <g
-      ref={ref}
-      className='station'
-      {...ariaCheckbox<SVGGElement>({
-        checked: checked,
-        disabled: disabled, 
-        onClick: onClick
-      })}
-    >
-      <title>{`Station (${x}, ${y})` + (transfer ? ' (transfer)' : '')}</title>
-  
-      <circle
-        className='station-bg'
-        cx={cx}
-        cy={cy}
-        r={styles.station.radius}
-      />
-  
-      {transfer && <text 
-        className="station-value"
-        x={cx}
-        y={cy}
-        textLength={2 * styles.station.radius}
-      >{transferPoints ?? '✖'}</text>}
-      
-      <circle
-        className='station-border'
-        cx={cx}
-        cy={cy}
-        r={styles.station.radius}
-        strokeWidth={styles.station.strokeWidth}
-      />
-  
-      <circle
-        className='station-border-bg'
-        cx={cx}
-        cy={cy}
-        r={styles.station.radius}
-        strokeWidth={styles.station.strokeWidth}
-      />
-  
-      <circle
-        className='station-border'
-        cx={cx}
-        cy={cy}
-        r={styles.station.radius}
-        strokeWidth={styles.station.strokeWidth}
-      />
-    </g>;
+  return <g
+    ref={ref}
+    className='station'
+    {...ariaCheckbox<SVGGElement>({
+      checked: checked,
+      disabled: disabled, 
+      onClick: onClick
+    })}
+  >
+    <title>{`Station (${x}, ${y})` + (transfer ? ' (transfer)' : '')}</title>
+
+    <circle
+      className='station-bg'
+      cx={cx}
+      cy={cy}
+      r={styles.station.radius}
+    />
+
+    {transfer && <text 
+      className="station-value"
+      x={cx}
+      y={cy}
+      textLength={2 * styles.station.radius}
+    >{transferPoints ?? '✖'}</text>}
     
-  }}</AppStylesContext.Consumer>;
+    <circle
+      className='station-border'
+      cx={cx}
+      cy={cy}
+      r={styles.station.radius}
+      strokeWidth={styles.station.strokeWidth}
+    />
+
+    <circle
+      className='station-border-bg'
+      cx={cx}
+      cy={cy}
+      r={styles.station.radius}
+      strokeWidth={styles.station.strokeWidth}
+    />
+
+    <circle
+      className='station-border'
+      cx={cx}
+      cy={cy}
+      r={styles.station.radius}
+      strokeWidth={styles.station.strokeWidth}
+    />
+  </g>;
 });
 
 export default Station;

@@ -184,4 +184,5 @@ export const makeAppStyles:Record.Factory<AppStyleProps> = Record<AppStyleProps>
 
 export type AppStyles = RecordOf<AppStyleProps>;
 
-export const AppStylesContext = React.createContext(makeAppStyles())
+
+export const AppStylesContext = React.createContext<AppStyles>(makeAppStyles());
