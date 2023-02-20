@@ -1,9 +1,10 @@
 import './Subway.scss';
 import React from 'react';
 import Immutable from 'immutable';
-import { ariaCheckbox } from './Aria';
-import * as AppData from './AppData';
 import classNames from 'classnames';
+import * as AppData from './AppData';
+import { AppStylesContext } from './AppStyles';
+import { ariaCheckbox } from './Aria';
 
 
 export type SubwayRef = SVGGElement;
@@ -11,7 +12,6 @@ export type SubwayRef = SVGGElement;
 export type SubwayProps = {
   subway: AppData.Subway,
   edgeOverlaps: Immutable.Map<AppData.Edge, Immutable.Set<AppData.SubwayName>>,
-  styles: any,
   windows?: Immutable.List<AppData.Window>,
   previewWindows?: Immutable.List<AppData.Window>,
   checked?: boolean | 'mixed',
@@ -22,163 +22,163 @@ export type SubwayProps = {
 export const Subway = React.forwardRef<SubwayRef, SubwayProps>(({
   subway, 
   edgeOverlaps,
-  styles,
   windows=Immutable.List(),
   previewWindows=Immutable.List(),
   checked=false,
   disabled=true,
   onClick
 }, ref) => {
-  const {
-    spacing,
-    route: {
-      strokeWidth: routeStrokeWidth,
-      edgeGap: routeEdgeGap
-    },
-    station: {
-      radius: stationRadius,
-      strokeWidth: stationStrokeWidth
-    },
-    routeName: {
-      radius: routeNameRadius
-    },
-    completionBonus: {
-      initial: {
-        width: initBonusWidth,
-        height: initBonusHeight,
-        strokeWidth: initBonusStrokeWidth,
-        dx: initBonusDx,
-        dy: initBonusDy
+  return <AppStylesContext.Consumer>{styles => {
+    const {
+      spacing,
+      route: {
+        strokeWidth: routeStrokeWidth,
+        edgeGap: routeEdgeGap
       },
-      subsequent: {
-        width: subseqBonusWidth,
-        height: subseqBonusHeight,
-        strokeWidth: subseqBonusStrokeWidth,
-        dx: subseqBonusDx,
-        dy: subseqBonusDy
+      station: {
+        radius: stationRadius,
+        strokeWidth: stationStrokeWidth
+      },
+      routeName: {
+        radius: routeNameRadius
+      },
+      completionBonus: {
+        initial: {
+          width: initBonusWidth,
+          height: initBonusHeight,
+          strokeWidth: initBonusStrokeWidth,
+          dx: initBonusDx,
+          dy: initBonusDy
+        },
+        subsequent: {
+          width: subseqBonusWidth,
+          height: subseqBonusHeight,
+          strokeWidth: subseqBonusStrokeWidth,
+          dx: subseqBonusDx,
+          dy: subseqBonusDy
+        }
+      },
+      trainCar: {
+        paddingX: trainCarPadX,
+        paddingY: trainCarPadY, 
+        front: {
+          cornerX: frontCornerX,
+          cornerY: frontCornerY,
+          width: frontWidth,
+          lightRadius: frontLightRadius
+        },
+        window: {
+          height: windowHeight,
+          width: windowWidth,
+          gap: windowGap,
+          border: windowBorder
+        },
+        wheels: {
+          margin: wheelsMargin,
+          radius: wheelRadius
+        },
+        underTrack: {
+          enabled: underTrackEnabled,
+          margin: underTrackMargin,
+          strokeWidth: underTrackWidth,
+          dashes: underTrackDashes
+        }
       }
-    },
-    trainCar: {
-      paddingX: trainCarPadX,
-      paddingY: trainCarPadY, 
-      front: {
-        cornerX: frontCornerX,
-        cornerY: frontCornerY,
-        width: frontWidth,
-        lightRadius: frontLightRadius
-      },
-      window: {
-        height: windowHeight,
-        width: windowWidth,
-        gap: windowGap,
-        border: windowBorder
-      },
-      wheels: {
-        margin: wheelsMargin,
-        radius: wheelRadius
-      },
-      underTrack: {
-        enabled: underTrackEnabled = false,
-        margin: underTrackMargin,
-        strokeWidth: underTrackWidth,
-        dashes: underTrackDashes
-      }
-    }
-  } = styles;
-
-  const [trainCarX, trainCarY] = subway.trainCar.xy().map(d => d * spacing);
-
-  const numWindowGaps = Math.max(0, subway.numWindows - 1);
-
-  const trainCarWidth = subway.numWindows * windowWidth + numWindowGaps * windowGap + 2 * trainCarPadX + frontCornerX;
-  const trainCarHeight = windowHeight + 2 * trainCarPadY;
-
-  const trainCarLeft = trainCarX - windowWidth / 2 - trainCarPadX;
-  const trainCarTop = trainCarY - trainCarHeight / 2;
-
-  const trainCarCX = trainCarLeft + trainCarWidth / 2;
-  const trainCarCY = trainCarTop + trainCarHeight / 2;
-  const trainCarPos = [trainCarCX, trainCarCY].map(d => d / spacing);
-  const trainCar = new AppData.Location({x: trainCarPos[0], y:trainCarPos[1]});
-
-  const path = subway.route.unshift(trainCar);
-  const pathStarts = path.toSeq();
-  const pathStops = pathStarts.skip(1);
-  const pathEdgePairs = pathStarts.zip(pathStops) as Immutable.Seq.Indexed<[AppData.Location, AppData.Location]>;
-  const pathEdges = pathEdgePairs.map(([start, stop]) => new AppData.Edge({start, stop}));
-
-  const routePoints = pathEdges.flatMap((edge, edgeIx) => {
-    const [[x1, y1], [x2, y2]] = edge.points().map(pos => pos.map(d => d * spacing));
-    const [rise, run] = [y1 - y2, x1 - x2];
-    const [perpRise, perpRun] = [-run, rise];
-
-    const forwardOverlaps = edgeOverlaps.get(edge, Immutable.Set<AppData.SubwayName>([subway.name]));
-    const backwardOverlaps = edgeOverlaps.get(edge.reverse(), Immutable.Set<AppData.SubwayName>());
-    const overlaps = forwardOverlaps.union(backwardOverlaps);
-    const namesIndex = overlaps.sort().valueSeq().keyOf(subway.name) ?? 0;
-
-    const stationDiameter = Math.max(0, 2 * stationRadius + stationStrokeWidth);
-    const edgeWidth = routeStrokeWidth + routeEdgeGap;
-    const maxPerpOffset = (overlaps.size / 2) * edgeWidth - edgeWidth / 2;
-    const perpOffset = maxPerpOffset - namesIndex * edgeWidth;
-
-    const sign = rise <= 0 && run <= 0 ? -1 : 1;
-    const edgeDist = Math.sqrt(rise * rise + run * run);
-    const [xPerpOffset, yPerpOffset] = [perpRun, perpRise].map(r => sign * (r / edgeDist) * perpOffset);
-
-    const maxTangOffset = edgeIx === 0 ? 0 : Math.max(0, stationDiameter / 2 - routeStrokeWidth / 2);
-    const soh = perpOffset / maxTangOffset;
-    const sohClamp = Math.max(-1, Math.min(1, soh)); //numbers like -1.000000002 give NaN in asin()
-    const tangOffset = maxPerpOffset === 0 ? maxTangOffset : Math.cos(Math.asin(sohClamp)) * maxTangOffset;
-    const [xTangOffset, yTangOffset] = [run, rise].map(r => (r / edgeDist) * tangOffset);
-
-    return [
-      //[x1, y1],
-      new AppData.Location({x:x1 + xPerpOffset - xTangOffset, y:y1 + yPerpOffset - yTangOffset}),
-      new AppData.Location({x:x2 + xPerpOffset + xTangOffset, y:y2 + yPerpOffset + yTangOffset})
-      //[x2, y2]
-    ];
-  });
-
-  const [cx, cy] = subway.trainCar.xy().map(d => d * spacing);
-  const left = cx - windowWidth / 2 - trainCarPadX;
-  const top = cy - trainCarHeight / 2;
-
-  const bodyId = `train-cart-body-${subway.name}`;
-  const bodyClipId = `train-cart-body-clip-${subway.name}`;
-
-  const frontLightMargin = frontWidth / 2 - frontLightRadius;
-  const frontLightCx = left + trainCarWidth - frontLightRadius - frontLightMargin;
-  const frontLightCy = top + trainCarHeight - frontLightRadius - frontLightMargin;
-
-  const frontWindowLeft = left + trainCarWidth - frontWidth;
-  const frontWindowHeight = trainCarHeight - 2 * (frontLightMargin + frontLightRadius);
-
-  const numWheels = Math.max(2, subway.numWindows);
-
-  const underTrackLeft = left + wheelsMargin + wheelRadius;
-  const underTrackY = top + trainCarHeight + underTrackMargin + underTrackWidth / 2;
-  const underTrackLength= trainCarWidth - 2 * wheelsMargin - 2 * wheelRadius;
-
-  const [initBonus, subseqBonus] = subway.routeCompletionBonus;
-  const [initBonusX, initBonusY] = [trainCarX - spacing + initBonusDx, trainCarY + initBonusDy];
-  const [subseqBonusX, subseqBonusY] = [trainCarX - spacing + subseqBonusDx, trainCarY + subseqBonusDy];
-
-  const [routeNameX, routeNameY] = [trainCarX - 2 * spacing, trainCarY];
-
-  const windowValues = [...windows, ...previewWindows];
-
+    } = styles;
   
-  return <g 
-    ref={ref}
-    className='subway'
-    style={{'--color': subway.color} as any}
-    {...ariaCheckbox<SVGGElement>({
-      checked: checked,
-      disabled: disabled, 
-      onClick: onClick
-    })}
-  >
+    const [trainCarX, trainCarY] = subway.trainCar.xy().map(d => d * spacing);
+  
+    const numWindowGaps = Math.max(0, subway.numWindows - 1);
+  
+    const trainCarWidth = subway.numWindows * windowWidth + numWindowGaps * windowGap + 2 * trainCarPadX + frontCornerX;
+    const trainCarHeight = windowHeight + 2 * trainCarPadY;
+  
+    const trainCarLeft = trainCarX - windowWidth / 2 - trainCarPadX;
+    const trainCarTop = trainCarY - trainCarHeight / 2;
+  
+    const trainCarCX = trainCarLeft + trainCarWidth / 2;
+    const trainCarCY = trainCarTop + trainCarHeight / 2;
+    const trainCarPos = [trainCarCX, trainCarCY].map(d => d / spacing);
+    const trainCar = new AppData.Location({x: trainCarPos[0], y:trainCarPos[1]});
+  
+    const path = subway.route.unshift(trainCar);
+    const pathStarts = path.toSeq();
+    const pathStops = pathStarts.skip(1);
+    const pathEdgePairs = pathStarts.zip(pathStops) as Immutable.Seq.Indexed<[AppData.Location, AppData.Location]>;
+    const pathEdges = pathEdgePairs.map(([start, stop]) => new AppData.Edge({start, stop}));
+  
+    const routePoints = pathEdges.flatMap((edge, edgeIx) => {
+      const [[x1, y1], [x2, y2]] = edge.points().map(pos => pos.map(d => d * spacing));
+      const [rise, run] = [y1 - y2, x1 - x2];
+      const [perpRise, perpRun] = [-run, rise];
+  
+      const forwardOverlaps = edgeOverlaps.get(edge, Immutable.Set<AppData.SubwayName>([subway.name]));
+      const backwardOverlaps = edgeOverlaps.get(edge.reverse(), Immutable.Set<AppData.SubwayName>());
+      const overlaps = forwardOverlaps.union(backwardOverlaps);
+      const namesIndex = overlaps.sort().valueSeq().keyOf(subway.name) ?? 0;
+  
+      const stationDiameter = Math.max(0, 2 * stationRadius + stationStrokeWidth);
+      const edgeWidth = routeStrokeWidth + routeEdgeGap;
+      const maxPerpOffset = (overlaps.size / 2) * edgeWidth - edgeWidth / 2;
+      const perpOffset = maxPerpOffset - namesIndex * edgeWidth;
+  
+      const sign = rise <= 0 && run <= 0 ? -1 : 1;
+      const edgeDist = Math.sqrt(rise * rise + run * run);
+      const [xPerpOffset, yPerpOffset] = [perpRun, perpRise].map(r => sign * (r / edgeDist) * perpOffset);
+  
+      const maxTangOffset = edgeIx === 0 ? 0 : Math.max(0, stationDiameter / 2 - routeStrokeWidth / 2);
+      const soh = perpOffset / maxTangOffset;
+      const sohClamp = Math.max(-1, Math.min(1, soh)); //numbers like -1.000000002 give NaN in asin()
+      const tangOffset = maxPerpOffset === 0 ? maxTangOffset : Math.cos(Math.asin(sohClamp)) * maxTangOffset;
+      const [xTangOffset, yTangOffset] = [run, rise].map(r => (r / edgeDist) * tangOffset);
+  
+      return [
+        //[x1, y1],
+        new AppData.Location({x:x1 + xPerpOffset - xTangOffset, y:y1 + yPerpOffset - yTangOffset}),
+        new AppData.Location({x:x2 + xPerpOffset + xTangOffset, y:y2 + yPerpOffset + yTangOffset})
+        //[x2, y2]
+      ];
+    });
+  
+    const [cx, cy] = subway.trainCar.xy().map(d => d * spacing);
+    const left = cx - windowWidth / 2 - trainCarPadX;
+    const top = cy - trainCarHeight / 2;
+  
+    const bodyId = `train-cart-body-${subway.name}`;
+    const bodyClipId = `train-cart-body-clip-${subway.name}`;
+  
+    const frontLightMargin = frontWidth / 2 - frontLightRadius;
+    const frontLightCx = left + trainCarWidth - frontLightRadius - frontLightMargin;
+    const frontLightCy = top + trainCarHeight - frontLightRadius - frontLightMargin;
+  
+    const frontWindowLeft = left + trainCarWidth - frontWidth;
+    const frontWindowHeight = trainCarHeight - 2 * (frontLightMargin + frontLightRadius);
+  
+    const numWheels = Math.max(2, subway.numWindows);
+  
+    const underTrackLeft = left + wheelsMargin + wheelRadius;
+    const underTrackY = top + trainCarHeight + underTrackMargin + underTrackWidth / 2;
+    const underTrackLength= trainCarWidth - 2 * wheelsMargin - 2 * wheelRadius;
+  
+    const [initBonus, subseqBonus] = subway.routeCompletionBonus;
+    const [initBonusX, initBonusY] = [trainCarX - spacing + initBonusDx, trainCarY + initBonusDy];
+    const [subseqBonusX, subseqBonusY] = [trainCarX - spacing + subseqBonusDx, trainCarY + subseqBonusDy];
+  
+    const [routeNameX, routeNameY] = [trainCarX - 2 * spacing, trainCarY];
+  
+    const windowValues = [...windows, ...previewWindows];
+  
+    
+    return <g 
+      ref={ref}
+      className='subway'
+      style={{'--color': subway.color} as any}
+      {...ariaCheckbox<SVGGElement>({
+        checked: checked,
+        disabled: disabled, 
+        onClick: onClick
+      })}
+    >
       <title>{`Subway ${subway.name}`}</title>
       <g>
         <title>Subway Route: {subway.name}</title>
@@ -374,6 +374,8 @@ export const Subway = React.forwardRef<SubwayRef, SubwayProps>(({
         </g>
       </g>
     </g>;
+
+  }}</AppStylesContext.Consumer>;
 });
 
 export default Subway;
