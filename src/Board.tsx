@@ -4,9 +4,9 @@ import React, { useImperativeHandle, useRef } from 'react';
 import Immutable from 'immutable';
 import { zip } from './utils';
 import NestedMap from './NestedMap';
-import Subway from './Subway';
+import {Subway as SubwayElement} from './Subway';
 import Station, { StationRef } from './Station';
-import * as AppData from './AppData';
+import {Location, Subway, Window} from './AppData';
 
 
 const styles = {
@@ -71,19 +71,19 @@ export type BoardRef = {
 };
 
 export type BoardProps = {
-  subways: Immutable.List<AppData.Subway>;
-  windows: Immutable.Map<string, (string | number)[]>;
-  previewWindows: Immutable.Map<string, (string | number)[]>;
-  transfers: any[];
-  previewTransfers: [number, number][];
-  stations: [number, number][],
-  previewStations: [number, number][],
+  subways: Immutable.List<Subway>;
+  windows: Immutable.Map<string, Immutable.List<Window>>;
+  previewWindows: Immutable.Map<string, Immutable.List<Window>>;
+  transfers: Immutable.Set<Location>;
+  previewTransfers: Immutable.Set<Location>;
+  stations: Immutable.Set<Location>,
+  previewStations: Immutable.Set<Location>,
   selectedSubway?: string,
-  selectedStation?: [number, number],
+  selectedStation?: Location,
   subwaySelectDisabled: boolean,
   stationSelectDisabled: boolean,
   onSubwayClick?: (label:string, event:React.UIEvent) => void
-  onStationClick?: (position:[number, number], event:React.UIEvent) => void
+  onStationClick?: (position:Location, event:React.UIEvent) => void
 };
 
 const Board = React.forwardRef<BoardRef, BoardProps>(({
@@ -102,7 +102,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
 }, ref) => {
 
 
-  const stationCheckValues = new NestedMap();
+  const stationCheckValues = Immutable.Set<Location>();
   for (const checkedStation of stations) {
     stationCheckValues.set(checkedStation, (prev:any) => prev, () => true);
   }
@@ -125,10 +125,15 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
     stations: () => stationsRef.current
   }));
   
-  const stationRefs = new NestedMap();
+  const stationRefs = Immutable.Map<Location, React.RefObject<StationRef>>();
   for (const subway of subways) {
-    for (const xy of subway.route) {
-      stationRefs.set(xy, (prev:React.RefObject<StationRef>) => prev, () => React.createRef<StationRef>());
+    for (const station of subway.route) {
+      stationRefs.update(station, old => {
+        if (old) {
+          return old;
+        }
+        return React.createRef<StationRef>();
+      });
     }
   }
 
@@ -142,13 +147,18 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
   }
 
   const padding = 30;
-  const points = subways.flatMap(({route, trainCar:[x, y]}) => [[x-2, y], [x-1, y], [x, y], ...route]);
-  const xs = points.map(([x, y]) => x);
-  const ys = points.map(([x, y]) => y);
+  const points:Immutable.List<Location> = subways.flatMap(({route, trainCar:{x, y}}) => route.push(
+    new Location({x:x-2, y}), //label
+    new Location({x:x-1, y}), //points
+    new Location({x, y}) //left window
+  ));
+  const xs = points.map(({x}) => x);
+  const ys = points.map(({y}) => y);
   const maxX = Math.max(...xs);
   const maxY = Math.max(...ys);
   const minX = Math.min(...xs);
   const minY = Math.min(...ys);
+  
   const [right, bottom] = [maxX, maxY].map(r => r * styles.spacing + padding);
   const [left, top] = [minX, minY].map(r => r * styles.spacing - padding);
   const viewBox = [left, top, right - left, bottom - top];
@@ -172,9 +182,9 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
       <title>Subway Select</title>
       {subways.map(subway => {
         const windowValues = windows.get(subway.name);
-        const isWindowsFull = (windowValues?.length ?? 0) >= subway.numWindows;
+        const isWindowsFull = (windowValues?.size ?? 0) >= subway.numWindows;
         const checked = selectedSubway === subway.name ? 'mixed' : false;
-        return <Subway 
+        return <SubwayElement 
           key={subway.name}
           styles={styles}
           subway={subway}
@@ -195,18 +205,21 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
       role='radiogroup'
     >
       <title>Station Select</title>
-      {Array.from(stationRefs, ([position, ref]) => {
-        const checked = stationCheckValues.get(position) ?? false;
+      {stationRefs.toKeyedSeq().map((ref, position) => {
+        const checked = stations.has(position);
         const transfer = transferSet.get(position) ?? false;
+        function handleStationClick(event:React.UIEvent) {
+          onStationClick?.(position, event);
+        }
         return <Station 
-          key={position.join(',')}
+          key={position.toString()}
           ref={ref}
-          position={position as [number, number]}
+          position={position}
           checked={checked as boolean}
           transfer={transfer as boolean}
           styles={styles}
           disabled={stationSelectDisabled || checked as boolean}
-          onClick={(event:React.UIEvent) => onStationClick?.(position as [number, number], event)}
+          onClick={handleStationClick}
         />
       })}
     </g>

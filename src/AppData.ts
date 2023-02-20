@@ -1,4 +1,4 @@
-import { List } from 'immutable';
+import Immutable from 'immutable';
 
 
 export enum CardType {
@@ -45,7 +45,7 @@ export type Card =
     | TransferCard
     | SkipCard;
 
-export const NewDeck:List<Card> = List([
+export const NewDeck:Immutable.List<Card> = Immutable.List([
 	{type: CardType.NUMBER, value: 3},
 	{type: CardType.NUMBER, value: 3},
 	{type: CardType.NUMBER, value: 3},
@@ -63,16 +63,61 @@ export const NewDeck:List<Card> = List([
 	{type: CardType.SKIP, label: 'Skip', value: 3}
 ]);
 
-export type Subway = {
+export type Window = 
+  | string 
+  | number;
+
+export type LocationProps = {
+	x: number,
+	y: number
+}
+
+export class Location extends Immutable.Record<LocationProps>({
+	x: 0,
+	y: 0
+}) {}
+
+export type SubwayProps = {
     name: string,
     numWindows: number,
     routeCompletionBonus: [number, number],
     color: string,
-    trainCar: [number, number],
-    route: [number, number][]
+    trainCar: Location,
+    route: Immutable.List<Location>
 };
 
-export const MetroCity:Subway[] = [
+export class Subway extends Immutable.Record<SubwayProps>({
+	name: "??",
+	numWindows: 1,
+	routeCompletionBonus: [0, 0],
+	color: "#fff",
+	trainCar: new Location(),
+	route: Immutable.List()
+}) {}
+
+export function fromJSON(json:({
+	name: string,
+	numWindows: number,
+	routeCompletionBonus: [number, number],
+	color: string,
+	trainCar: [number, number],
+	route: [number, number][]
+})[]):Immutable.Map<String, Subway> {
+	return Immutable.Map(json.map(item => [
+		item.name,
+		new Subway({
+			name: item.name,
+			numWindows: item.numWindows,
+			routeCompletionBonus: item.routeCompletionBonus,
+			color: item.color,
+			trainCar: new Location({x: item.trainCar[0], y:item.trainCar[1]}),
+			route: Immutable.List(item.route.map(([x, y]) => new Location({x, y})))
+		})
+	]));
+}
+
+
+export const MetroCity = fromJSON([
 	{
 		name: "A",
 		numWindows: 2,
@@ -274,10 +319,10 @@ export const MetroCity:Subway[] = [
 		    [3, 0]
 		]
 	}
-];
+]);
 
 
-export const TubeTown:Subway[] = [
+export const TubeTown = fromJSON([
 	{
 		name: "M",
 		numWindows: 2,
@@ -464,7 +509,7 @@ export const TubeTown:Subway[] = [
 			[12, 10],
 		]
 	}
-];
+]);
 
 export const subwayMaps = [
 	{

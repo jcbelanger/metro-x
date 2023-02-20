@@ -1,12 +1,13 @@
 import './Station.scss';
 import React from 'react';
 import {ariaCheckbox} from './Aria';
+import {Location} from './AppData'
 
 
 export type StationRef = SVGGElement;
 
 export type StationProps = {
-  position: [number, number],
+  position: Location,
   styles: any,
   disabled: boolean,
   checked: boolean,
@@ -15,7 +16,7 @@ export type StationProps = {
 };
 
 const Station = React.forwardRef<StationRef, StationProps>(({
-  position:[x, y], 
+  position:{x, y}, 
   styles, 
   disabled=true, 
   checked=false, 

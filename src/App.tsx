@@ -5,8 +5,7 @@ import Immutable from 'immutable';
 import Board, { BoardRef } from './Board';
 import CardMat, { DeckRef } from './CardMat';
 import useMatchMediaQuery from './MatchMedia';
-import { shuffle, takeWhile } from './utils';
-import * as AppData from './AppData';
+import {Location, Subway, Window, Card, CardType, NewDeck, MetroCity} from './AppData';
 
 
 enum DispatchEventType {
@@ -22,7 +21,7 @@ type SelectSubwayEvent = {
 
 type SelectStationEvent = {
   type: DispatchEventType.SELECT_STATION;
-  position: [number, number]
+  position: Location
 }
 
 type DrawCardEvent = {
@@ -34,46 +33,59 @@ type DispatchEvent =
   | SelectSubwayEvent
   | DrawCardEvent;
 
+
 type AppStateProps = {
-  subways: Immutable.List<AppData.Subway>;
-  windows: Immutable.Map<string, (string | number)[]>;
-  previewWindows: Immutable.Map<string, (string | number)[]>;
-  transfers: [number, number][];
-  previewTransfers: [number, number][];
-  stations: [number, number][],
-  previewStations: [number, number][],
+  subways: Immutable.Map<String, Subway>;
+  windows: Immutable.Map<string, Immutable.List<Window>>;
+  previewWindows: Immutable.Map<string, Immutable.List<Window>>;
+  transfers: Immutable.Set<Location>;
+  previewTransfers: Immutable.Set<Location>;
+  stations: Immutable.Set<Location>,
+  previewStations: Immutable.Set<Location>,
   selectedSubway?: string,
-  selectedStation?: [number, number],
+  selectedStation?: Location,
   cardDrawDisabled: boolean,
   subwaySelectDisabled: boolean,
   stationSelectDisabled: boolean,
   numDrawn: number,
-  cards: Immutable.List<AppData.Card>;
+  cards: Immutable.List<Card>;
 };
 
 class AppState extends Immutable.Record<AppStateProps>({
-  subways: Immutable.List(),
+  subways: Immutable.Map(),
   windows: Immutable.Map(),
   previewWindows: Immutable.Map(),
-  transfers: [],
-  previewTransfers: [],
-  stations: [],
-  previewStations: [],
+  transfers: Immutable.Set(),
+  previewTransfers: Immutable.Set(),
+  stations: Immutable.Set(),
+  previewStations: Immutable.Set(),
   selectedSubway: undefined,
   selectedStation: undefined,
   cardDrawDisabled: false,
   subwaySelectDisabled: true,
   stationSelectDisabled: true,
   numDrawn: 0,
-  cards: shuffle(AppData.NewDeck)
+  cards: NewDeck
 }) {}
+
+function shuffle<T>(input: Immutable.List<T>): Immutable.List<T> {
+  return input.withMutations(output => {
+      for (let i = output.size - 1; i >= 1; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp:T = output.get(i) as T;
+          output.set(i, output.get(j) as T);
+          output.set(j, temp);
+      }
+  });
+}
 
 function App() {
   const deckRef = useRef<DeckRef>(null);
   const boardRef = useRef<BoardRef>(null);
 
   const initalState:AppState = new AppState({
-    subways: Immutable.List(AppData.MetroCity)
+    subways: MetroCity,
+    cards: shuffle(NewDeck)
   });
 
   const [state, dispatch] = useReducer((prevState:AppState, action:DispatchEvent):AppState => {
@@ -84,8 +96,6 @@ function App() {
         return selectStation(prevState, action);
       case DispatchEventType.DRAW_CARD:
         return drawCard(prevState, action);
-      default:
-        return prevState;
     }
   }, initalState);
 
@@ -99,30 +109,28 @@ function App() {
     const nextSubway = prevState.subways.find(subway => subway.name === action.name);
     if (!nextSubway) return nextState;
 
-    const isStationFree = ([x, y]: [number, number]):boolean => prevState.stations.findIndex(([a, b]) => a === x && b === y) < 0;
-    const nextFreeIx = nextSubway?.route?.findIndex(isStationFree) ?? 0;
+    const isStationFree = (loc:Location):boolean => prevState.stations.has(loc);
+    const nextFreeIx = nextSubway.route.findIndex(x => isStationFree(x));
     
     nextState = nextState.merge({
       selectedSubway: action.name,
-      previewWindows: Immutable.Map({[action.name]: [prevCard.value]}),
-      previewTransfers: [],
-      previewStations: [],
+      previewWindows: Immutable.Map({[action.name]: Immutable.List([prevCard.value])}),
+      previewTransfers: Immutable.Set(),
+      previewStations: Immutable.Set(),
       cardDrawDisabled: false
     });
 
     switch (prevCard.type) {
-      case AppData.CardType.NUMBER:
-      case AppData.CardType.RESHUFFLE:
-        nextState = nextState.set('previewStations', [...takeWhile(nextSubway.route.slice(nextFreeIx, nextFreeIx + prevCard.value), isStationFree)]);
+      case CardType.NUMBER:
+      case CardType.RESHUFFLE:
+        nextState = nextState.set('previewStations', nextSubway.route.slice(nextFreeIx, nextFreeIx + prevCard.value).takeWhile(isStationFree).toSet());
         break; 
-      case AppData.CardType.SKIP:
-        nextState = nextState.set('previewStations', nextSubway.route.slice(nextFreeIx).filter(isStationFree).slice(0, prevCard.value));
+      case CardType.SKIP:
+        nextState = nextState.set('previewStations', nextSubway.route.slice(nextFreeIx).filter(isStationFree).slice(0, prevCard.value).toSet());
         break;
-      case AppData.CardType.TRANSFER:
-        nextState = nextState.set('previewStations', [...takeWhile(nextSubway.route.slice(nextFreeIx, nextFreeIx + 1), isStationFree)]);
-        nextState = nextState.set('previewTransfers', [...nextState.previewStations]);
-        break;
-      default:
+      case CardType.TRANSFER:
+        nextState = nextState.set('previewStations', nextSubway.route.slice(nextFreeIx, nextFreeIx + 1).takeWhile(isStationFree).toSet());
+        nextState = nextState.set('previewTransfers', nextState.previewStations);
         break;
     }
     
@@ -131,7 +139,7 @@ function App() {
 
   function selectStation(prevState:AppState, action:SelectStationEvent):AppState {
     return prevState.merge({
-      previewStations: [action.position],
+      previewStations: Immutable.Set([action.position]),
       selectedStation: action.position,
       cardDrawDisabled: false
     });
@@ -139,11 +147,11 @@ function App() {
 
   function drawCard(prevState:AppState, action:DrawCardEvent):AppState {
     let nextState:AppState = prevState.merge({
-      stations: [...prevState.stations, ...prevState.previewStations],
-      transfers: [...prevState.transfers, ...prevState.previewTransfers],
+      stations: prevState.stations.concat(prevState.previewStations),
+      transfers: prevState.transfers.concat(prevState.previewTransfers),
       previewWindows: Immutable.Map(),
-      previewTransfers: [],
-      previewStations: [],
+      previewTransfers: Immutable.Set(),
+      previewStations: Immutable.Set(),
       selectedStation: undefined,
       selectedSubway: undefined,
       subwaySelectDisabled: true,
@@ -155,7 +163,7 @@ function App() {
     const prevIx = prevState.cards.size - prevState.numDrawn;
     const prevCard = prevState.cards.get(prevIx);
     if (prevCard) {
-      if (prevCard.type === AppData.CardType.RESHUFFLE) {
+      if (prevCard.type === CardType.RESHUFFLE) {
         nextState = nextState.merge({
           cards: shuffle(prevState.cards),
           numDrawn: 1
@@ -172,7 +180,7 @@ function App() {
     const nextCard = nextState.cards.get(nextIx);
     if (nextCard) {
       deckRef.current?.blur();
-      if (nextCard.type === AppData.CardType.FREE) {
+      if (nextCard.type === CardType.FREE) {
         nextState = nextState.set('stationSelectDisabled', false);
         boardRef.current?.stations()?.focus();
       } else {
@@ -183,13 +191,13 @@ function App() {
 
     return nextState;
   }
-  
+
   function handleDeckDraw(event:React.UIEvent) {
     event.preventDefault();
     dispatch({type: DispatchEventType.DRAW_CARD});
   }
 
-  function handleStationClick(position:[number, number], event:React.UIEvent) {
+  function handleStationClick(position:Location, event:React.UIEvent) {
     event.preventDefault();
     dispatch({type: DispatchEventType.SELECT_STATION, position});
   }
