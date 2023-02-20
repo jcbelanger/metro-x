@@ -1,4 +1,5 @@
 import './Station.scss';
+
 import React from 'react';
 import {ariaCheckbox} from './Aria';
 import {Location} from './AppData'
@@ -10,7 +11,7 @@ export type StationProps = {
   position: Location,
   styles: any,
   disabled: boolean,
-  checked: boolean,
+  checked: boolean | 'mixed', 
   transfer: boolean,
   onClick?: (event:React.UIEvent) => void
 };

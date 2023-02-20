@@ -72,9 +72,9 @@ function shuffle<T>(input: Immutable.List<T>): Immutable.List<T> {
   return input.withMutations(output => {
       for (let i = output.size - 1; i >= 1; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          const temp:T = output.get(i) as T;
-          output.set(i, output.get(j) as T);
-          output.set(j, temp);
+          output = output
+            .set(i, input.get(j) as T)
+            .set(j, input.get(i) as T);
       }
   });
 }
@@ -100,41 +100,54 @@ function App() {
   }, initalState);
 
   function selectSubway(prevState:AppState, action:SelectSubwayEvent):AppState {
-    let nextState:AppState = prevState;
-
     const prevIx = prevState.cards.size - prevState.numDrawn;
     const prevCard = prevState.cards.get(prevIx);
-    if (!prevCard) return nextState;
+    if (!prevCard) return prevState;
 
-    const nextSubway = prevState.subways.find(subway => subway.name === action.name);
-    if (!nextSubway) return nextState;
+    const selectedSubway = prevState.subways.get(action.name);
+    if (!selectedSubway) return prevState;
 
-    const isStationFree = (loc:Location):boolean => prevState.stations.has(loc);
-    const nextFreeIx = nextSubway.route.findIndex(x => isStationFree(x));
-    
-    nextState = nextState.merge({
-      selectedSubway: action.name,
-      previewWindows: Immutable.Map({[action.name]: Immutable.List([prevCard.value])}),
-      previewTransfers: Immutable.Set(),
-      previewStations: Immutable.Set(),
-      cardDrawDisabled: false
+    return prevState.withMutations(nextState => {
+      nextState = nextState.merge({
+        selectedSubway: action.name,
+        previewWindows: Immutable.Map({[action.name]: Immutable.List([prevCard.value])}),
+        previewTransfers: Immutable.Set(),
+        previewStations: Immutable.Set(),
+        cardDrawDisabled: false
+      });
+      
+      const wasStationFree = (loc:Location) => !prevState.stations.has(loc);
+
+      switch (prevCard.type) {
+        case CardType.NUMBER:
+        case CardType.RESHUFFLE:
+          nextState = nextState.set('previewStations', selectedSubway.route.toSeq()
+            .skipUntil(wasStationFree)
+            .take(prevCard.value)
+            .takeWhile(wasStationFree)
+            .toSet()
+          );
+          break; 
+        case CardType.SKIP:
+          nextState = nextState.set('previewStations', selectedSubway.route.toSeq()
+            .skipUntil(wasStationFree)
+            .filter(wasStationFree)
+            .take(prevCard.value)
+            .toSet()
+          );
+          break;
+        case CardType.TRANSFER:
+          const transfer = selectedSubway.route.toSeq()
+            .skipUntil(wasStationFree)
+            .take(1)
+            .toSet();
+          nextState = nextState.set('previewStations', transfer);
+          nextState = nextState.set('previewTransfers', transfer);
+          break;
+      }
+      
+      return nextState;
     });
-
-    switch (prevCard.type) {
-      case CardType.NUMBER:
-      case CardType.RESHUFFLE:
-        nextState = nextState.set('previewStations', nextSubway.route.slice(nextFreeIx, nextFreeIx + prevCard.value).takeWhile(isStationFree).toSet());
-        break; 
-      case CardType.SKIP:
-        nextState = nextState.set('previewStations', nextSubway.route.slice(nextFreeIx).filter(isStationFree).slice(0, prevCard.value).toSet());
-        break;
-      case CardType.TRANSFER:
-        nextState = nextState.set('previewStations', nextSubway.route.slice(nextFreeIx, nextFreeIx + 1).takeWhile(isStationFree).toSet());
-        nextState = nextState.set('previewTransfers', nextState.previewStations);
-        break;
-    }
-    
-    return nextState;
   }
 
   function selectStation(prevState:AppState, action:SelectStationEvent):AppState {
@@ -146,50 +159,52 @@ function App() {
   }
 
   function drawCard(prevState:AppState, action:DrawCardEvent):AppState {
-    let nextState:AppState = prevState.merge({
-      stations: prevState.stations.concat(prevState.previewStations),
-      transfers: prevState.transfers.concat(prevState.previewTransfers),
-      previewWindows: Immutable.Map(),
-      previewTransfers: Immutable.Set(),
-      previewStations: Immutable.Set(),
-      selectedStation: undefined,
-      selectedSubway: undefined,
-      subwaySelectDisabled: true,
-      stationSelectDisabled: true,
-      cardDrawDisabled: true,
-      numDrawn: prevState.numDrawn + 1
-    });
+    return prevState.withMutations(nextState => {
+      nextState = nextState.merge({
+        stations: prevState.stations.concat(prevState.previewStations),
+        transfers: prevState.transfers.concat(prevState.previewTransfers),
+        previewWindows: Immutable.Map(),
+        previewTransfers: Immutable.Set(),
+        previewStations: Immutable.Set(),
+        selectedStation: undefined,
+        selectedSubway: undefined,
+        subwaySelectDisabled: true,
+        stationSelectDisabled: true,
+        cardDrawDisabled: true,
+        numDrawn: prevState.numDrawn + 1
+      });
+      
+      const prevIx = prevState.cards.size - prevState.numDrawn;
+      const prevCard = prevState.cards.get(prevIx);
+      if (prevCard) {
+        if (prevCard.type === CardType.RESHUFFLE) {
+          nextState = nextState.merge({
+            cards: shuffle(prevState.cards),
+            numDrawn: 1
+          });
+        }
     
-    const prevIx = prevState.cards.size - prevState.numDrawn;
-    const prevCard = prevState.cards.get(prevIx);
-    if (prevCard) {
-      if (prevCard.type === CardType.RESHUFFLE) {
-        nextState = nextState.merge({
-          cards: shuffle(prevState.cards),
-          numDrawn: 1
-        });
+        if (prevState.selectedSubway) {
+          const prevPreviewWindows = prevState.previewWindows.get(prevState.selectedSubway, Immutable.List());
+          nextState = Immutable.updateIn(nextState, ['windows', prevState.selectedSubway], Immutable.List<Window>(), old => (old as Immutable.List<Window>).concat(prevPreviewWindows));
+        }
       }
   
-      if (prevState.selectedSubway !== undefined) {
-        const prevPreviewWindows = prevState.previewWindows.get(prevState.selectedSubway, []);
-        nextState = Immutable.updateIn(nextState, ['windows', prevState.selectedSubway], [], old => [...old as any[], ...prevPreviewWindows]);
+      const nextIx = nextState.cards.size - nextState.numDrawn;
+      const nextCard = nextState.cards.get(nextIx);
+      if (nextCard) {
+        deckRef.current?.blur();
+        if (nextCard.type === CardType.FREE) {
+          nextState = nextState.set('stationSelectDisabled', false);
+          boardRef.current?.stations()?.focus();
+        } else {
+          nextState = nextState.set('subwaySelectDisabled', false);
+          boardRef.current?.subways()?.focus();
+        }
       }
-    }
-
-    const nextIx = nextState.cards.size - nextState.numDrawn;
-    const nextCard = nextState.cards.get(nextIx);
-    if (nextCard) {
-      deckRef.current?.blur();
-      if (nextCard.type === CardType.FREE) {
-        nextState = nextState.set('stationSelectDisabled', false);
-        boardRef.current?.stations()?.focus();
-      } else {
-        nextState = nextState.set('subwaySelectDisabled', false);
-        boardRef.current?.subways()?.focus();
-      }
-    }
-
-    return nextState;
+  
+      return nextState;
+    });
   }
 
   function handleDeckDraw(event:React.UIEvent) {

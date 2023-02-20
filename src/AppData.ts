@@ -76,8 +76,8 @@ export class Location extends Immutable.Record<LocationProps>({
 	x: 0,
 	y: 0
 }) {
-	xy():Immutable.List<number> {
-		return Immutable.List([this.x, this.y]);
+	xy():[number, number] {
+		return [this.x, this.y];
 	}
 }
 
@@ -89,7 +89,15 @@ export type EdgeProps = {
 export class Edge extends Immutable.Record<EdgeProps>({
 	start: new Location(),
 	stop: new Location()
-}) {}
+}) {
+	points():[[number, number], [number, number]] {
+		return [this.start.xy(), this.stop.xy()];
+	}
+
+	reverse():Edge {
+		return new Edge({start: this.stop, stop: this.start});
+	}
+}
 
 export type SubwayProps = {
     name: string,

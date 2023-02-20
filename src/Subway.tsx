@@ -1,7 +1,6 @@
 import './Subway.scss';
 import React from 'react';
 import Immutable from 'immutable';
-import { rangeMap, zip } from './utils';
 import { ariaCheckbox } from './Aria';
 import * as AppData from './AppData';
 import classNames from 'classnames';
@@ -98,32 +97,27 @@ export const Subway:React.FC<SubwayProps> = ({
   const trainCarCX = trainCarLeft + trainCarWidth / 2;
   const trainCarCY = trainCarTop + trainCarHeight / 2;
   const trainCarPos = [trainCarCX, trainCarCY].map(d => d / spacing);
+  const trainCar = new AppData.Location({x: trainCarPos[0], y:trainCarPos[1]});
 
-  
-  const path = subway.route.unshift(trainCarPos)
-  const starts = subway.route.toSeq();
-  const stops = starts.skip(1); 
-  const edgePairs = starts.zip(stops) as Immutable.Seq.Indexed<[Location, Location]>;
+  const path = subway.route.unshift(trainCar);
+  const pathStarts = path.toSeq();
+  const pathStops = pathStarts.skip(1);
+  const pathEdgePairs = pathStarts.zip(pathStops) as Immutable.Seq.Indexed<[AppData.Location, AppData.Location]>;
+  const pathEdges = pathEdgePairs.map(([start, stop]) => new AppData.Edge({start, stop}));
 
-  
-  // const path = [trainCarPos, ...subway.route]
-  // const edges = zip(path, path.slice(1)) as Iterable<[[number, number], [number, number]]>
-
-  const routePoints = [...edges].flatMap((edge, edgeIx) => {
-    const [[x1, y1], [x2, y2]] = edge.map(pos => pos.map(d => d * spacing));
+  const routePoints = pathEdges.flatMap((edge, edgeIx) => {
+    const [[x1, y1], [x2, y2]] = edge.points().map(pos => pos.map(d => d * spacing));
     const [rise, run] = [y1 - y2, x1 - x2];
     const [perpRise, perpRun] = [-run, rise];
 
-    const forward = edge.flat();
-    const forwardNames = edgeNames.get(forward) ?? new Set([subway.name]);
-    const backward = edge.reverse().flat();
-    const backwardNames = edgeNames.get(backward) ?? new Set();
-    const names = new Set([...forwardNames, ...backwardNames]);
-    const namesIndex = names.size === 1 ? 0 : Array.from(names).sort().indexOf(subway.name);
+    const forwardOverlaps = edgeOverlaps.get(edge, Immutable.Set<string>([subway.name]));
+    const backwardOverlaps = edgeOverlaps.get(edge.reverse(), Immutable.Set());
+    const overlaps = forwardOverlaps.union(backwardOverlaps);
+    const namesIndex = overlaps.sort().valueSeq().keyOf(subway.name) ?? 0;
 
     const stationDiameter = Math.max(0, 2 * stationRadius + stationStrokeWidth);
     const edgeWidth = routeStrokeWidth + routeEdgeGap;
-    const maxPerpOffset = (names.size / 2) * edgeWidth - edgeWidth / 2;
+    const maxPerpOffset = (overlaps.size / 2) * edgeWidth - edgeWidth / 2;
     const perpOffset = maxPerpOffset - namesIndex * edgeWidth;
 
     const sign = rise <= 0 && run <= 0 ? -1 : 1;
@@ -138,8 +132,8 @@ export const Subway:React.FC<SubwayProps> = ({
 
     return [
       //[x1, y1],
-      [x1 + xPerpOffset - xTangOffset, y1 + yPerpOffset - yTangOffset],
-      [x2 + xPerpOffset + xTangOffset, y2 + yPerpOffset + yTangOffset],
+      new AppData.Location({x:x1 + xPerpOffset - xTangOffset, y:y1 + yPerpOffset - yTangOffset}),
+      new AppData.Location({x:x2 + xPerpOffset + xTangOffset, y:y2 + yPerpOffset + yTangOffset})
       //[x2, y2]
     ];
   });
@@ -172,6 +166,7 @@ export const Subway:React.FC<SubwayProps> = ({
 
   const windowValues = [...windows, ...previewWindows];
 
+  
   return <g 
     className='subway'
     style={{'--color': subway.color} as any}
@@ -186,7 +181,7 @@ export const Subway:React.FC<SubwayProps> = ({
         <title>Subway Route: {subway.name}</title>
         <polyline
           className='route'
-          points={routePoints.flat().join(' ')}
+          points={routePoints.flatMap(loc => loc.xy()).join(' ')}
           strokeWidth={routeStrokeWidth}
           strokeLinejoin='round'
           strokeLinecap='round'
@@ -281,7 +276,7 @@ export const Subway:React.FC<SubwayProps> = ({
         <g className='train-cart'>
 
           <g className='wheels'>
-            {[...rangeMap(numWheels, wheelIndex => {
+            {Immutable.Range(0, numWheels).map(wheelIndex => {
               const wheelsWidth = trainCarWidth - 2 * wheelsMargin - 2 * wheelRadius;
               const wheelStep = wheelsWidth / (numWheels - 1);
               const wheelCx = left + wheelsMargin + wheelRadius + wheelIndex * wheelStep;
@@ -294,7 +289,7 @@ export const Subway:React.FC<SubwayProps> = ({
                 r={wheelRadius}
                 fill='#22211e'
               />;
-            })]}
+            })}
           </g>
 
           <path 
