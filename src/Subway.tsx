@@ -212,8 +212,6 @@ export const Subway = React.forwardRef<SubwayRef, SubwayProps>(({
         <text 
           x={routeNameX}
           y={routeNameY}
-          textLength={routeNameRadius}
-          lengthAdjust="spacing"
           textAnchor='middle'
           dominantBaseline='central'
         >{subway.name}</text>
@@ -242,7 +240,6 @@ export const Subway = React.forwardRef<SubwayRef, SubwayProps>(({
           <text 
               x={subseqBonusX}
               y={subseqBonusY}
-              textLength={subseqBonusWidth - subseqBonusStrokeWidth}
               fill='#231F20'
               textAnchor='middle'
               dominantBaseline='central'
@@ -265,7 +262,6 @@ export const Subway = React.forwardRef<SubwayRef, SubwayProps>(({
           <text 
             x={initBonusX}
             y={initBonusY}
-            textLength={Math.min(initBonusWidth, initBonusHeight) / 2 - initBonusStrokeWidth}
             fill='#231F20'
             textAnchor='middle'
             dominantBaseline='central'
@@ -360,8 +356,6 @@ export const Subway = React.forwardRef<SubwayRef, SubwayProps>(({
               {windowValue !== undefined && <text
                 x={windowLeft + windowWidth / 2}
                 y={windowTop + windowHeight / 2}
-                textLength={windowWidth}
-                lengthAdjust="spacing"
                 textAnchor='middle'
                 dominantBaseline='central'
               >{windowValue}</text>}

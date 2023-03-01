@@ -52,7 +52,6 @@ const Station = React.forwardRef<StationRef, StationProps>(({
       className="station-value"
       x={cx}
       y={cy}
-      textLength={2 * styles.station.radius}
     >{transferPoints ?? '✖'}</text>}
     
     <circle
