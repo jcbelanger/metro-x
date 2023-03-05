@@ -177,7 +177,16 @@ export const Subway = React.forwardRef<SubwayRef, SubwayProps>(({
     })}
   >
     <title>{`Subway ${subway.name}`}</title>
-    <g>
+
+    {underTrackEnabled && <path
+      className='under-track' 
+      d={`M${underTrackLeft},${underTrackY} h${underTrackLength}`}
+      stroke='#9aa2a5'
+      strokeWidth={underTrackWidth}
+      strokeDasharray={underTrackDashes}
+    />}
+
+    <g className='subway-route'>
       <title>Subway Route: {subway.name}</title>
       <polyline
         className='route'
@@ -189,14 +198,6 @@ export const Subway = React.forwardRef<SubwayRef, SubwayProps>(({
         stroke={subway.color}
       />
     </g>
-
-    {underTrackEnabled && <path
-      className='under-track' 
-      d={`M${underTrackLeft},${underTrackY} h${underTrackLength}`}
-      stroke='#9aa2a5'
-      strokeWidth={underTrackWidth}
-      strokeDasharray={underTrackDashes}
-    />}
 
     <g className='subway-status'>
 

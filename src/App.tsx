@@ -86,6 +86,7 @@ function App() {
 
   const initalState:AppState = new AppState({
     subways: MetroCity,
+    // subways: TubeTown,
     cards: shuffle(NewDeck)
   });
 
@@ -226,30 +227,30 @@ function App() {
   }
 
   function buildSubwayGraphs() {
-    const edgeOverlapEntries:Iterable<[Edge, Immutable.Set<SubwayName>]> = state.subways.valueSeq().flatMap(subway => {
+    const edgeSetEntries:Iterable<[Edge, Immutable.Set<SubwayName>]> = state.subways.valueSeq().flatMap(subway => {
       const starts = subway.route.toSeq();
       const stops = starts.skip(1);
       const edgePairs = starts.zip(stops) as Immutable.Seq.Indexed<[Location, Location]>;
       return edgePairs.map(([start, stop]) => [new Edge({start, stop}), Immutable.Set<SubwayName>([subway.name])]);
     });
     
-    const emptyEdgeOverlaps = Immutable.Map<Edge, Immutable.Set<SubwayName>>();
-    const edgeOverlaps = emptyEdgeOverlaps.withMutations(mutGraph => {
-      return mutGraph.mergeWith((oldVal, newVal) => oldVal.union(newVal), edgeOverlapEntries);
+    const emptyEdgeSets = Immutable.Map<Edge, Immutable.Set<SubwayName>>();
+    const edgeSets = emptyEdgeSets.withMutations(mutGraph => {
+      return mutGraph.mergeWith((oldVal, newVal) => oldVal.union(newVal), edgeSetEntries);
     });
-    
-    const vertexOverlapEntries:Iterable<[Location, Immutable.Set<SubwayName>]> = state.subways.valueSeq().flatMap(subway => {
+
+    const vertexSetEntries:Iterable<[Location, Immutable.Set<SubwayName>]> = state.subways.valueSeq().flatMap(subway => {
       return subway.route.toSeq().map(station => [station, Immutable.Set<SubwayName>([subway.name])]);
     });
 
-    const emptyVertexOverlaps = Immutable.Map<Location, Immutable.Set<SubwayName>>();
-    const vertexOverlaps = emptyVertexOverlaps.withMutations(mutGraph => {
-      return mutGraph.mergeWith((oldVal, newVal) => oldVal.union(newVal), vertexOverlapEntries);
+    const emptyVertexSets = Immutable.Map<Location, Immutable.Set<SubwayName>>();
+    const vertexSets = emptyVertexSets.withMutations(mutGraph => {
+      return mutGraph.mergeWith((oldVal, newVal) => oldVal.union(newVal), vertexSetEntries);
     });
 
     return {
-      edgeOverlaps,
-      vertexOverlaps
+      edgeSets,
+      vertexSets
     };
   }
   

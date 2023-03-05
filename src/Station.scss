@@ -27,6 +27,15 @@ $dashLen: $circum / 5;
 .station {
 	outline: none;
 
+	.station-pointer-coarse-bg {
+		fill: transparent;
+	}
+
+	@media(pointer: fine) {
+		.station-pointer-coarse-bg {
+			display: none;
+		}
+	}
 	
 	.station-bg {
 		fill: #fff; 
@@ -46,12 +55,17 @@ $dashLen: $circum / 5;
 	}
 
 	.station-border-bg,
-	.station-border {
+	.station-border,
+	.station-border-finished {
 		stroke-width: 4px;
 	}
 
 	.station-border {
 		stroke: #b0b1b5;
+		fill: none;
+	}
+
+	.station-border-finished {
 		fill: none;
 	}
 
@@ -82,6 +96,10 @@ $dashLen: $circum / 5;
 				stroke: #242021;
 				@include dashed-station();
 			}
+
+			.station-border-finished {
+				display: none;
+			}
 		}
 	}
 
@@ -96,6 +114,10 @@ $dashLen: $circum / 5;
 		.station-border {
 			stroke: #b0b1b5;
 			@include dashed-station();
+		}
+		
+		.station-border-finished {
+			display: none;
 		}
 		
 		// background: black;

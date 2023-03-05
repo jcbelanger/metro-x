@@ -11,14 +11,14 @@ import { AppStylesContext } from './AppStyles';
 export type { SubwayRef, StationRef };
 
 export type BoardRef = {
-  subways: () => SVGGElement | null,
-  stations: () => SVGGElement | null
+  subways: () => SubwayRef | null,
+  stations: () => StationRef | null
 };
 
 export type BoardProps = {
   subways: Immutable.Map<SubwayName, Subway>,
-  edgeOverlaps: Immutable.Map<Edge, Immutable.Set<SubwayName>>,
-  vertexOverlaps: Immutable.Map<Location, Immutable.Set<SubwayName>>,
+  edgeSets: Immutable.Map<Edge, Immutable.Set<SubwayName>>,
+  vertexSets: Immutable.Map<Location, Immutable.Set<SubwayName>>,
   windows: Immutable.Map<SubwayName, Immutable.List<Window>>,
   previewWindows: Immutable.Map<SubwayName, Immutable.List<Window>>,
   transfers: Immutable.Set<Location>,
@@ -35,8 +35,8 @@ export type BoardProps = {
 
 const Board = React.forwardRef<BoardRef, BoardProps>(({
   subways,
-  edgeOverlaps,
-  vertexOverlaps,
+  edgeSets,
+  vertexSets,
   windows, 
   stations,
   transfers,
@@ -106,7 +106,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
           subway={subway}
           windows={windowValues}
           previewWindows={previewWindows.get(subway.name)}
-          edgeOverlaps={edgeOverlaps}
+          edgeOverlaps={edgeSets}
           checked={checked}
           disabled={subwaySelectDisabled || isWindowsFull}
           onClick={(event:React.UIEvent) => onSubwayClick?.(subway.name, ref, event)}
@@ -121,11 +121,10 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
       role='radiogroup'
     >
       <title>Station Select</title>
-      {vertexOverlaps
+      {vertexSets
         .toKeyedSeq()
-        .map((vertexOverlap, position) => {
+        .map((vertexSet, position) => {
           const ref = React.createRef<StationRef>();
-          const checked = stations.has(position);
           function handleStationClick(event:React.UIEvent) {
             onStationClick?.(position, ref, event);
           }
@@ -133,10 +132,11 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
             key={position.toString()}
             ref={ref}
             position={position}
-            checked={previewStations.has(position) ? 'mixed' : checked}
+            finished={subways.filter(subway => position.equals(subway.route.last())).toSet()}
+            checked={previewStations.has(position) ? 'mixed' : stations.has(position)}
             transfer={previewTransfers.has(position) || transfers.has(position)}
-            transferPoints={vertexOverlap.size * 2}
-            disabled={stationSelectDisabled || checked}
+            transferPoints={vertexSet.size * 2}
+            disabled={stationSelectDisabled || stations.has(position)}
             onClick={handleStationClick}
           />;
         })
