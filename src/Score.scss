@@ -1,0 +1,73 @@
+.score {
+	.score-circle {
+		filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.8));
+	}
+
+	.circle-bg {
+		fill: #fff;
+	}
+
+	.circle-label {
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+
+		> textPath {
+			text-anchor: middle;
+			dominant-baseline: hanging;
+		}
+	}
+
+	.circle-value {
+		font-weight: 400;
+		text-anchor: middle;
+		dominant-baseline: central;
+	}
+
+	.score-operator {
+		font-weight: 700;
+	}
+}
+
+.penalty-table {
+	$yellow: rgb(247, 178, 22);
+
+	border-collapse: collapse;
+
+	th {
+		background-color: $yellow;
+		font-weight: 700;
+		color: #000;
+	}
+
+	td {
+		background-color: #fff;
+		color: #000;
+	}
+
+	td,
+	th {
+		padding: 0.2em 1em;
+		text-align: center;
+		border: 2px solid $yellow;
+
+		&:first-child {
+			border-left: none;
+		}
+
+		&:last-child {
+			border-right: none;
+		}
+	}
+
+	tr:last-child {
+		td,
+		th {
+			border-bottom: none;
+		}
+	}
+
+	tr.active {
+		text-decoration: underline;
+	}
+}

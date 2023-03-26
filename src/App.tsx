@@ -6,12 +6,14 @@ import Board, { BoardRef, StationRef, SubwayRef } from './Board';
 import CardMat, { DeckRef } from './CardMat';
 import useMatchMediaQuery from './MatchMedia';
 import {Location, Subway, SubwayName, Window, Card, CardType, NewDeck, MetroCity, Edge} from './AppData';
+import Score from './Score';
 
 
 enum DispatchEventType {
   SELECT_SUBWAY,
   SELECT_STATION,
-  DRAW_CARD
+  DRAW_CARD,
+  NEW_GAME,
 };
 
 type SelectSubwayEvent = {
@@ -22,16 +24,21 @@ type SelectSubwayEvent = {
 type SelectStationEvent = {
   type: DispatchEventType.SELECT_STATION;
   position: Location
-}
+};
 
 type DrawCardEvent = {
   type: DispatchEventType.DRAW_CARD;
-}
+};
+
+type NewGameEvent = {
+  type: DispatchEventType.NEW_GAME;
+};
 
 type DispatchEvent = 
   | SelectStationEvent
   | SelectSubwayEvent
-  | DrawCardEvent;
+  | DrawCardEvent
+  | NewGameEvent;
 
 
 type AppStateProps = {
@@ -98,8 +105,17 @@ function App() {
         return selectStation(prevState, action);
       case DispatchEventType.DRAW_CARD:
         return drawCard(prevState, action);
+      case DispatchEventType.NEW_GAME:
+        return newGame(prevState, action);
     }
   }, initalState);
+
+  function newGame(prevState:AppState, event:NewGameEvent):AppState {
+    return new AppState({
+      subways: prevState.subways,
+      cards: shuffle(NewDeck)
+    });
+  }
 
   function selectSubway(prevState:AppState, action:SelectSubwayEvent):AppState {
     const prevIx = prevState.cards.size - prevState.numDrawn;
@@ -152,15 +168,15 @@ function App() {
     });
   }
 
-  function selectStation(prevState:AppState, action:SelectStationEvent):AppState {
+  function selectStation(prevState:AppState, event:SelectStationEvent):AppState {
     return prevState.merge({
-      previewStations: Immutable.Set([action.position]),
-      selectedStation: action.position,
+      previewStations: Immutable.Set([event.position]),
+      selectedStation: event.position,
       cardDrawDisabled: false
     });
   }
 
-  function drawCard(prevState:AppState, action:DrawCardEvent):AppState {
+  function drawCard(prevState:AppState, event:DrawCardEvent):AppState {
     return prevState.withMutations(nextState => {
       nextState = nextState.merge({
         stations: prevState.stations.concat(prevState.previewStations),
@@ -209,6 +225,11 @@ function App() {
     });
   }
 
+  function handleNewGame(event:React.UIEvent) {
+    event.preventDefault();
+    dispatch({type: DispatchEventType.NEW_GAME});
+  }
+
   function handleDeckDraw(event:React.UIEvent) {
     event.preventDefault();
     dispatch({type: DispatchEventType.DRAW_CARD});
@@ -226,7 +247,7 @@ function App() {
     dispatch({type: DispatchEventType.SELECT_SUBWAY, name});
   }
 
-  function buildSubwayGraphs() {
+  const graphs = (function buildGraphs() {
     const edgeSetEntries:Iterable<[Edge, Immutable.Set<SubwayName>]> = state.subways.valueSeq().flatMap(subway => {
       const starts = subway.route.toSeq();
       const stops = starts.skip(1);
@@ -252,17 +273,30 @@ function App() {
       edgeSets,
       vertexSets
     };
+  })();
+  
+  function isRouteComplete(subway:Subway):boolean {
+    return subway.route.every(station => [state.stations, state.transfers].some(set => set.has(station)));
   }
+
+  const scores = (function calculateScores() {
+    const completedSubways = state.subways.filter(isRouteComplete);
+    return {
+      completed: completedSubways.reduce((accum, subway) => accum + subway.routeCompletionBonus[0], 0),
+      transfers: 2 * state.transfers.reduce((accum, station) => accum + graphs.vertexSets.get(station, Immutable.Set()).size, 0),
+      empty: graphs.vertexSets.size - state.stations.size - state.transfers.size
+    };
+  })();
   
 
   const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 55rem)', [state.subways]);
 
-  return <>
-    <div className='App'>
+  return <div className='App'>
       <Board
         ref={boardRef} 
         subways={state.subways}
-        {...buildSubwayGraphs()}
+        edgeSets={graphs.edgeSets}
+        vertexSets={graphs.vertexSets}
         windows={state.windows}
         stations={state.stations}
         transfers={state.transfers}
@@ -284,8 +318,9 @@ function App() {
         cardDrawDisabled={state.cardDrawDisabled}
         onDeckDraw={handleDeckDraw}
       />
+      {/* <Score {...scores} />
+      <button onClick={handleNewGame}>New Game</button> */}
   </div>;
-  </>
 }
 
 export default App;
