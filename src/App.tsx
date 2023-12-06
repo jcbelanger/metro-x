@@ -5,8 +5,8 @@ import Immutable from 'immutable';
 import Board, { BoardRef, StationRef, SubwayRef } from './Board';
 import CardMat, { DeckRef } from './CardMat';
 import useMatchMediaQuery from './MatchMedia';
-import {Location, Subway, SubwayName, Window, Card, CardType, NewDeck, MetroCity, Edge} from './AppData';
-import Score from './Score';
+import {Location, Subway, SubwayName, Window, Card, CardType, NewDeck, TubeTown, Edge} from './AppData';
+// import Score from './Score';
 
 
 enum DispatchEventType {
@@ -14,7 +14,7 @@ enum DispatchEventType {
   SELECT_STATION,
   DRAW_CARD,
   NEW_GAME,
-};
+}
 
 type SelectSubwayEvent = {
   type: DispatchEventType.SELECT_SUBWAY;
@@ -39,7 +39,6 @@ type DispatchEvent =
   | SelectSubwayEvent
   | DrawCardEvent
   | NewGameEvent;
-
 
 type AppStateProps = {
   subways: Immutable.Map<SubwayName, Subway>,
@@ -92,8 +91,8 @@ function App() {
   const boardRef = useRef<BoardRef>(null);
 
   const initalState:AppState = new AppState({
-    subways: MetroCity,
-    // subways: TubeTown,
+    // subways: MetroCity,
+    subways: TubeTown,
     cards: shuffle(NewDeck)
   });
 
@@ -104,13 +103,13 @@ function App() {
       case DispatchEventType.SELECT_STATION:
         return selectStation(prevState, action);
       case DispatchEventType.DRAW_CARD:
-        return drawCard(prevState, action);
+        return drawCard(prevState);
       case DispatchEventType.NEW_GAME:
-        return newGame(prevState, action);
+        return newGame(prevState);
     }
   }, initalState);
 
-  function newGame(prevState:AppState, event:NewGameEvent):AppState {
+  function newGame(prevState:AppState):AppState {
     return new AppState({
       subways: prevState.subways,
       cards: shuffle(NewDeck)
@@ -155,6 +154,7 @@ function App() {
           );
           break;
         case CardType.TRANSFER:
+          // eslint-disable-next-line no-case-declarations
           const transfer = selectedSubway.route.toSeq()
             .skipUntil(wasStationFree)
             .take(1)
@@ -176,7 +176,7 @@ function App() {
     });
   }
 
-  function drawCard(prevState:AppState, event:DrawCardEvent):AppState {
+  function drawCard(prevState:AppState):AppState {
     return prevState.withMutations(nextState => {
       nextState = nextState.merge({
         stations: prevState.stations.concat(prevState.previewStations),
@@ -225,6 +225,7 @@ function App() {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleNewGame(event:React.UIEvent) {
     event.preventDefault();
     dispatch({type: DispatchEventType.NEW_GAME});
@@ -275,18 +276,18 @@ function App() {
     };
   })();
   
-  function isRouteComplete(subway:Subway):boolean {
-    return subway.route.every(station => [state.stations, state.transfers].some(set => set.has(station)));
-  }
-
-  const scores = (function calculateScores() {
-    const completedSubways = state.subways.filter(isRouteComplete);
-    return {
-      completed: completedSubways.reduce((accum, subway) => accum + subway.routeCompletionBonus[0], 0),
-      transfers: 2 * state.transfers.reduce((accum, station) => accum + graphs.vertexSets.get(station, Immutable.Set()).size, 0),
-      empty: graphs.vertexSets.size - state.stations.size - state.transfers.size
-    };
-  })();
+  // function isRouteComplete(subway:Subway):boolean {
+  //   return subway.route.every(station => [state.stations, state.transfers].some(set => set.has(station)));
+  // }
+  //
+  // const scores = (function calculateScores() {
+  //   const completedSubways = state.subways.filter(isRouteComplete);
+  //   return {
+  //     completed: completedSubways.reduce((accum, subway) => accum + subway.routeCompletionBonus[0], 0),
+  //     transfers: 2 * state.transfers.reduce((accum, station) => accum + graphs.vertexSets.get(station, Immutable.Set()).size, 0),
+  //     empty: graphs.vertexSets.size - state.stations.size - state.transfers.size
+  //   };
+  // })();
   
 
   const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 55rem)', [state.subways]);

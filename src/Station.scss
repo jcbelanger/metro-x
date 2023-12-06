@@ -3,7 +3,7 @@
 
 $radius: 15;
 $circum: 2 * math.$pi * $radius;
-$dashLen: $circum / 5;
+$dashLen: calc($circum / 5);
 
 @keyframes dashed-station {
 	from {

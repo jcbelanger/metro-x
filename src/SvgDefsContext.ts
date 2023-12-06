@@ -15,8 +15,8 @@ export function useDefIds(ids:Iterable<string>):SvgDefs {
 };
 
 export const SvgDefsContext = React.createContext<SvgDefs>({
-    url: id => undefined,
-    id: id => undefined
+    url: _id => undefined,
+    id: _id => undefined
 });
 
 export default SvgDefsContext;

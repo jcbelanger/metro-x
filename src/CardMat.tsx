@@ -22,7 +22,7 @@ const CardMat = React.forwardRef<DeckRef, CardMapProps>(({cards=List(), landscap
   const minorAxis = 1 - majorAxis;
   const [majorPos, minorPos] = [majorAxis, minorAxis].map(axis => ['x', 'y'][axis]) as ('x' | 'y')[];
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  const [majorLen, minorLen] = [majorAxis, minorAxis].map(axis => ['width', 'height'][axis]) as ('width' | 'height')[];
+  const [majorLen, _minorLen] = [majorAxis, minorAxis].map(axis => ['width', 'height'][axis]) as ('width' | 'height')[];
 
   const cardDims = {width: 225, height:350};
   const gap = 50;

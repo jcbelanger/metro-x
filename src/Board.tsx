@@ -142,7 +142,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
         })
         .valueSeq()}
     </g>
-
+    
   </svg>;
 });
 
