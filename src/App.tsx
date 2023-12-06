@@ -1,6 +1,6 @@
 import './App.scss';
 
-import React, { useRef, useReducer } from 'react';
+import React, { useRef, useReducer, useCallback } from 'react';
 import Immutable from 'immutable';
 import Board, { BoardRef, StationRef, SubwayRef } from './Board';
 import CardMat, { DeckRef } from './CardMat';
@@ -226,27 +226,27 @@ function App() {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function handleNewGame(event:React.UIEvent) {
+  const handleNewGame = useCallback((event:React.UIEvent) => {
     event.preventDefault();
     dispatch({type: DispatchEventType.NEW_GAME});
-  }
+  }, []);
 
-  function handleDeckDraw(event:React.UIEvent) {
+  const handleDeckDraw = useCallback((event:React.UIEvent) => {
     event.preventDefault();
     dispatch({type: DispatchEventType.DRAW_CARD});
-  }
+  }, []);
 
-  function handleStationClick(position:Location, ref:React.RefObject<StationRef>, event:React.UIEvent) {
+  const handleStationClick = useCallback((position:Location, ref:React.RefObject<StationRef>, event:React.UIEvent) => {
     event.preventDefault();
     ref?.current?.focus();
     dispatch({type: DispatchEventType.SELECT_STATION, position});
-  }
+  }, []);
 
-  function handleSubwayClick(name:SubwayName, ref:React.RefObject<SubwayRef>, event:React.UIEvent) {
+  const handleSubwayClick = useCallback((name:SubwayName, ref:React.RefObject<SubwayRef>, event:React.UIEvent) => {
     event.preventDefault();
     ref?.current?.focus();
     dispatch({type: DispatchEventType.SELECT_SUBWAY, name});
-  }
+  }, []);
 
   const graphs = (function buildGraphs() {
     const edgeSetEntries:Iterable<[Edge, Immutable.Set<SubwayName>]> = state.subways.valueSeq().flatMap(subway => {

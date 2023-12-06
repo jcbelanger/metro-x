@@ -96,10 +96,15 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
     >
       <title>Subway Select</title>
       {subways.valueSeq().map(subway => {
-        const ref = React.createRef<SubwayRef>();
         const windowValues = windows.get(subway.name);
         const isWindowsFull = (windowValues?.size ?? 0) >= subway.numWindows;
         const checked = selectedSubway === subway.name ? 'mixed' : false;
+        
+        const ref = React.createRef<SubwayRef>();
+        function handleSubwayClick(event:React.UIEvent) {
+          onSubwayClick?.(subway.name, ref, event)
+        }
+
         return <SubwayElement 
           ref={ref}
           key={subway.name}
@@ -109,7 +114,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
           edgeOverlaps={edgeSets}
           checked={checked}
           disabled={subwaySelectDisabled || isWindowsFull}
-          onClick={(event:React.UIEvent) => onSubwayClick?.(subway.name, ref, event)}
+          onClick={handleSubwayClick}
         />;
       })}
     </g>
@@ -128,6 +133,7 @@ const Board = React.forwardRef<BoardRef, BoardProps>(({
           function handleStationClick(event:React.UIEvent) {
             onStationClick?.(position, ref, event);
           }
+          
           return <Station 
             key={position.toString()}
             ref={ref}
