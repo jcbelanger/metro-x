@@ -2,9 +2,9 @@ import './Subway.scss';
 import React from 'react';
 import Immutable from 'immutable';
 import classNames from 'classnames';
-import * as AppData from './AppData';
-import { AppStylesContext } from './AppStyles';
-import { ariaCheckbox } from './Aria';
+import * as AppData from '../../common/AppData';
+import { AppStylesContext } from '../../common/AppStyles';
+import { ariaCheckbox } from '../../util/aria';
 
 
 export type SubwayRef = SVGGElement;

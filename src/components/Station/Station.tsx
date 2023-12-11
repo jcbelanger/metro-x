@@ -1,9 +1,9 @@
 import './Station.scss';
 
 import React from 'react';
-import { ariaCheckbox } from './Aria';
-import { Location, Subway } from './AppData'
-import { AppStylesContext } from './AppStyles';
+import { ariaCheckbox } from '../../util/aria';
+import { Location, Subway } from '../../common/AppData'
+import { AppStylesContext } from '../../common/AppStyles';
 import Immutable from 'immutable';
 
 

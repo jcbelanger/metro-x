@@ -2,11 +2,12 @@ import './App.scss';
 
 import React, { useRef, useReducer, useCallback } from 'react';
 import Immutable from 'immutable';
-import Board, { BoardRef, StationRef, SubwayRef } from './Board';
-import CardMat, { DeckRef } from './CardMat';
-import useMatchMediaQuery from './MatchMedia';
-import {Location, Subway, SubwayName, Window, Card, CardType, NewDeck, TubeTown, Edge} from './AppData';
-// import Score from './Score';
+import Board, { BoardRef, StationRef, SubwayRef } from '../Board/Board';
+import CardMat, { DeckRef } from '../CardMat/CardMat';
+// import Score from '../Score/Score';
+import {Location, Subway, SubwayName, Window, Card, CardType, NewDeck, Edge, MetroCity} from '../../common/AppData';
+import shuffle from '../../util/immutable-shuffle';
+import useMatchMediaQuery from '../../hooks/MatchMedia';
 
 
 enum DispatchEventType {
@@ -74,25 +75,13 @@ class AppState extends Immutable.Record<AppStateProps>({
   cards: NewDeck
 }) {}
 
-function shuffle<T>(input: Immutable.List<T>): Immutable.List<T> {
-  return input.withMutations(output => {
-      for (let i = output.size - 1; i >= 1; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          const temp:T = output.get(i) as T;
-          output = output
-            .set(i, output.get(j) as T)
-            .set(j, temp);
-      }
-  });
-}
 
 function App() {
   const deckRef = useRef<DeckRef>(null);
   const boardRef = useRef<BoardRef>(null);
 
   const initalState:AppState = new AppState({
-    // subways: MetroCity,
-    subways: TubeTown,
+    subways: MetroCity,
     cards: shuffle(NewDeck)
   });
 
@@ -229,24 +218,24 @@ function App() {
   const handleNewGame = useCallback((event:React.UIEvent) => {
     event.preventDefault();
     dispatch({type: DispatchEventType.NEW_GAME});
-  }, []);
+  }, [dispatch]);
 
   const handleDeckDraw = useCallback((event:React.UIEvent) => {
     event.preventDefault();
     dispatch({type: DispatchEventType.DRAW_CARD});
-  }, []);
+  }, [dispatch]);
 
   const handleStationClick = useCallback((position:Location, ref:React.RefObject<StationRef>, event:React.UIEvent) => {
     event.preventDefault();
     ref?.current?.focus();
     dispatch({type: DispatchEventType.SELECT_STATION, position});
-  }, []);
+  }, [dispatch]);
 
   const handleSubwayClick = useCallback((name:SubwayName, ref:React.RefObject<SubwayRef>, event:React.UIEvent) => {
     event.preventDefault();
     ref?.current?.focus();
     dispatch({type: DispatchEventType.SELECT_SUBWAY, name});
-  }, []);
+  }, [dispatch]);
 
   const graphs = (function buildGraphs() {
     const edgeSetEntries:Iterable<[Edge, Immutable.Set<SubwayName>]> = state.subways.valueSeq().flatMap(subway => {
@@ -279,7 +268,7 @@ function App() {
   // function isRouteComplete(subway:Subway):boolean {
   //   return subway.route.every(station => [state.stations, state.transfers].some(set => set.has(station)));
   // }
-  //
+  
   // const scores = (function calculateScores() {
   //   const completedSubways = state.subways.filter(isRouteComplete);
   //   return {
@@ -319,8 +308,10 @@ function App() {
         cardDrawDisabled={state.cardDrawDisabled}
         onDeckDraw={handleDeckDraw}
       />
-      {/* <Score {...scores} />
-      <button onClick={handleNewGame}>New Game</button> */}
+      {/* <div>
+        <Score {...scores} />
+        <button onClick={handleNewGame}>New Game</button>
+      </div> */}
   </div>;
 }
 

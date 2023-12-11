@@ -14,4 +14,4 @@ export default function useMatchMediaQuery(mediaQuery:string, deps?: DependencyL
     }, deps);
 
     return matches;
-};
+}

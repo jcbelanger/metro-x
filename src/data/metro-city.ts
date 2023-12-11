@@ -1,11 +1,11 @@
-[
+export default [
 	{
-		"name": "A",
-		"numWindows": 2,
-		"routeCompletionBonus": [2, 1],
-		"color": "#d11e29",
-		"trainCar": [-2.5, 0],
-		"route": [
+		name: "A",
+		numWindows: 2,
+		routeCompletionBonus: [2, 1],
+		color: "#d11e29",
+		trainCar: [-2.5, 0],
+		route: [
 			[0, 0],
 			[1, 0],
 			[1, 1],
@@ -20,12 +20,12 @@
 		]
 	},
 	{
-		"name": "B",
-		"numWindows": 2,
-		"routeCompletionBonus": [4, 2],
-		"color": "#f2801e",
-		"trainCar": [-2.5, 1.5],
-		"route": [
+		name: "B",
+		numWindows: 2,
+		routeCompletionBonus: [4, 2],
+		color: "#f2801e",
+		trainCar: [-2.5, 1.5],
+		route: [
 			[0, 0],
 			[1, 0],
 			[1, 1],
@@ -43,12 +43,12 @@
 		]
 	},
 	{
-		"name": "C",
-		"numWindows": 3,
-		"routeCompletionBonus": [7, 5],
-		"color": "#e8549b",
-		"trainCar": [-2.5, 3],
-		"route": [
+		name: "C",
+		numWindows: 3,
+		routeCompletionBonus: [7, 5],
+		color: "#e8549b",
+		trainCar: [-2.5, 3],
+		route: [
             [2, 3],
             [3, 3],
             [5, 3],
@@ -66,12 +66,12 @@
 		]
 	},
 	{
-		"name": "D",
-		"numWindows": 3,
-		"routeCompletionBonus": [5, 3],
-		"color": "#83c143",
-		"trainCar": [-2.5, 4],
-		"route": [
+		name: "D",
+		numWindows: 3,
+		routeCompletionBonus: [5, 3],
+		color: "#83c143",
+		trainCar: [-2.5, 4],
+		route: [
             [1, 4],
             [1, 5],
             [2, 5],
@@ -91,12 +91,12 @@
 		]
 	},
 	{
-		"name": "E",
-		"numWindows": 3,
-		"routeCompletionBonus": [4, 2],
-		"color": "#fbb418",
-		"trainCar": [-2.5, 5],
-		"route": [
+		name: "E",
+		numWindows: 3,
+		routeCompletionBonus: [4, 2],
+		color: "#fbb418",
+		trainCar: [-2.5, 5],
+		route: [
             [2, 6],
             [4, 6],
             [4, 7],
@@ -115,12 +115,12 @@
 		]
 	},
 	{
-		"name": "F",
-		"numWindows": 2,
-		"routeCompletionBonus": [4, 2],
-		"color": "#8051a2",
-		"trainCar": [-2.5, 6],
-		"route": [
+		name: "F",
+		numWindows: 2,
+		routeCompletionBonus: [4, 2],
+		color: "#8051a2",
+		trainCar: [-2.5, 6],
+		route: [
             [3, 7],
             [4, 7],
             [5, 6],
@@ -135,13 +135,13 @@
 		]
 	},
 	{
-		"name": "G",
-		"numWindows": 2,
-		"routeCompletionBonus": [5, 3],
-		"color": "#008bd4",
-		"trainCar": [-2.5, 7],
-		"route": [
-		    [3, 7],
+		name: "G",
+		numWindows: 2,
+		routeCompletionBonus: [5, 3],
+		color: "#008bd4",
+		trainCar: [-2.5, 7],
+		route: [
+			[3, 7],
             [4, 7],
             [5, 6],
             [6, 6],
@@ -157,47 +157,54 @@
 		]
 	},
 	{
-		"name": "H",
-		"numWindows": 3,
-		"routeCompletionBonus": [6, 4],
-		"color": "#586264",
-		"trainCar": [-2.5, 8],
-		"route": [
-		    [2, 8],
-		    [3, 8],
-		    [4, 8],
-		    [7, 8],
-		    [8, 7],
-		    [9, 8],
-		    [10, 8],
-		    [11, 8],
-		    [11, 6],
-		    [11, 4],
-		    [10, 3],
-		    [10, 2],
-		    [10, 1],
-		    [10, 0]
+		name: "H",
+		numWindows: 3,
+		routeCompletionBonus: [6, 4],
+		color: "#586264",
+		trainCar: [-2.5, 8],
+		route: [
+			[2, 8],
+			[3, 8],
+			[4, 8],
+			[7, 8],
+			[8, 7],
+			[9, 8],
+			[10, 8],
+			[11, 8],
+			[11, 6],
+			[11, 4],
+			[10, 3],
+			[10, 2],
+			[10, 1],
+			[10, 0]
 		]
 	},
 	{
-		"name": "I",
-		"numWindows": 3,
-		"routeCompletionBonus": [4, 2],
-		"color": "#008574",
-		"trainCar": [-2.5, 9],
-		"route": [
-		    [3, 9],
-		    [4, 9],
-		    [5, 9],
-		    [6, 7],
-		    [6, 6],
-		    [5, 5],
-		    [6, 4],
-		    [6, 3],
-		    [6, 1],
-		    [6, 0],
-		    [4, 0],
-		    [3, 0]
+		name: "I",
+		numWindows: 3,
+		routeCompletionBonus: [4, 2],
+		color: "#008574",
+		trainCar: [-2.5, 9],
+		route: [
+			[3, 9],
+			[4, 9],
+			[5, 9],
+			[6, 7],
+			[6, 6],
+			[5, 5],
+			[6, 4],
+			[6, 3],
+			[6, 1],
+			[6, 0],
+			[4, 0],
+			[3, 0]
 		]
 	}
-]
+] as {
+	name: string,
+	numWindows: number,
+	routeCompletionBonus: [number, number],
+	color: string,
+	trainCar: [number, number],
+	route: [number, number][]
+}[];

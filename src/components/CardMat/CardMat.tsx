@@ -2,9 +2,9 @@ import './CardMat.scss';
 
 import React from 'react';
 import { List } from 'immutable';
-import Card from './Card';
-import {ariaButton} from './Aria';
-import * as AppData from './AppData';
+import Card from '../Card/Card';
+import {ariaButton} from '../../util/aria';
+import * as AppData from '../../common/AppData';
 
 
 export type DeckRef = SVGGElement;
@@ -82,10 +82,8 @@ const CardMat = React.forwardRef<DeckRef, CardMapProps>(({cards=List(), landscap
       {cards.slice(0, cards.size - numDrawn).map((card, ix) =>
         <Card
           key={ix}
-          revealed={false}
           x={deckPos.x + deckOffset.x * ix}
           y={deckPos.y + deckOffset.y * ix}
-          card={card}
           {...cardDims}
         />
       )}
@@ -95,10 +93,9 @@ const CardMat = React.forwardRef<DeckRef, CardMapProps>(({cards=List(), landscap
       {cards.slice(cards.size - numDrawn, cards.size).reverse().map((card, ix) => 
         <Card
           key={ix}
-          revealed={true}
           x={activePos.x + deckOffset.x * ix}
           y={activePos.y + deckOffset.y * ix}
-          card={card}
+          value={card}
           {...cardDims}
         />
       )}

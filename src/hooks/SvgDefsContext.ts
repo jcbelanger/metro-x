@@ -12,11 +12,11 @@ export function useDefIds(ids:Iterable<string>):SvgDefs {
         url: id => defIds.has(id) ? `url(#${ defIds.get(id) })` : undefined,
         id: id => defIds.get(id)
     };
-};
+}
 
 export const SvgDefsContext = React.createContext<SvgDefs>({
-    url: _id => undefined,
-    id: _id => undefined
+    url: () => undefined,
+    id: () => undefined
 });
 
 export default SvgDefsContext;

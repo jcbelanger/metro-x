@@ -1,15 +1,14 @@
 import './Card.scss';
 import React, { useId } from 'react';
-import classNames from 'classnames';
-import * as AppData from './AppData';
+import * as AppData from '../../common/AppData';
+
 
 export type CardProps = {
   x: number,
   y: number,
   width: number,
   height: number,
-  card: AppData.Card,
-  revealed: boolean
+  value?: AppData.Card
 };
 
 export const Card:React.FC<CardProps> = ({
@@ -17,22 +16,21 @@ export const Card:React.FC<CardProps> = ({
   y,
   width,
   height,
-  card,
-  revealed
+  value
 }) => {
 
   const strokeWidth = 10;
   const id = useId();
   const bgId = id + '-bg';
   const clipId = id + '-clip';
+  const cardType = value ? AppData.CardType[value.type].toLowerCase() : 'flipped';
   
 
-  const front = () => {
+  const front = (card: AppData.Card) => {
     const textHeight = 40;
     const iconOverlapText = 10;
     const iconRadius = width / 2 - textHeight - strokeWidth / 2 + iconOverlapText;
-    const labelOffset = 'label' in card && card.label.length <= 5 ? 30 : 0
-
+    const labelOffset = 'label' in card && card.label.length <= 5 ? 30 : 0;
 
     return <g className='front'>
       {'label' in card && <g className='card-labels'>
@@ -156,9 +154,10 @@ export const Card:React.FC<CardProps> = ({
       </g>
     </g>;
   };
-  
+
+
   return <g 
-    className={classNames('card', {[card.type + '-card']: revealed})}
+    className={`card ${cardType}-card`}
     transform={`translate(${x}, ${y})`}
   >
     <rect 
@@ -176,7 +175,7 @@ export const Card:React.FC<CardProps> = ({
       <use href={`#${bgId}`} />
     </clipPath>
 
-    {(revealed ? front : back)()}
+    {(value ? () => front(value) : back)()}
     
   </g>;
 };

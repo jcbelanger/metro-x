@@ -2,10 +2,10 @@ import './Board.scss';
 
 import React from 'react';
 import Immutable from 'immutable';
-import {Subway as SubwayElement, SubwayRef } from './Subway';
-import Station, { StationRef } from './Station';
-import { Location, Subway, SubwayName, Window, Edge } from './AppData';
-import { AppStylesContext } from './AppStyles';
+import {Subway as SubwayElement, SubwayRef } from '../Subway/Subway';
+import Station, { StationRef } from '../Station/Station';
+import { Location, Subway, SubwayName, Window, Edge } from '../../common/AppData';
+import { AppStylesContext } from '../../common/AppStyles';
 
 
 export type { SubwayRef, StationRef };

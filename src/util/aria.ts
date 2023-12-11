@@ -1,5 +1,6 @@
 import React from 'react';
 
+
 export type AriaButtonProps<T> = {
     disabled?: boolean,
     onClick?: (event:React.MouseEvent<T> | React.KeyboardEvent<T>) => void
@@ -29,7 +30,7 @@ export function ariaButton<T>({disabled=false, onClick}:AriaButtonProps<T>) {
       onClick: handleClick,
       onKeyDown: handleKeyPressed
     }
-};
+}
 
 export type AriaCheckboxProps<T> = {
     checked?: boolean | 'mixed',
@@ -62,4 +63,4 @@ export function ariaCheckbox<T>({checked=false, disabled=false, onClick}:AriaChe
       onClick: handleClick,
       onKeyDown: handleKeyPressed
     }
-};
+}

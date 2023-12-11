@@ -2,6 +2,7 @@ import './Score.scss';
 import React, { useId } from 'react';
 import classNames from 'classnames';
 
+
 export type ScoreProps = {
     completed: number,
     transfers: number,
@@ -47,8 +48,8 @@ export const Score:React.FC<ScoreProps> = ({completed, transfers, empty}) => {
                     id={pathId} 
                     d={`
                         M 0 ${styles.radius} 
-                        a ${styles.radius} ${styles.radius} 0 0 1 0 ${-2*styles.radius}
-                        a ${styles.radius} ${styles.radius} 0 0 1 0 ${2*styles.radius}
+                        a ${styles.radius} ${styles.radius} 0 0 1 0 ${-2 * styles.radius}
+                        a ${styles.radius} ${styles.radius} 0 0 1 0 ${2 * styles.radius}
                     `}
                 />
             </defs>
@@ -57,7 +58,7 @@ export const Score:React.FC<ScoreProps> = ({completed, transfers, empty}) => {
                 const cy = circleSize / 2;
                 const circleValue = circleTexts[circle]
                 return <g key={circle} className='score-circle'>
-                    <title>{`${circle[0].toLocaleUpperCase() + circle.substring(1)} Score: ${circleValue}`}</title>
+                    <title>{`${circle[0].toLocaleUpperCase() + circle.substring(1)}: ${circleValue}`}</title>
                     <circle 
                         className='circle-bg'
                         cx={cx}
