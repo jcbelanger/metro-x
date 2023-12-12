@@ -4,7 +4,7 @@ import React, { useRef, useReducer, useCallback } from 'react';
 import Immutable from 'immutable';
 import Board, { BoardRef, StationRef, SubwayRef } from '../Board/Board';
 import CardMat, { DeckRef } from '../CardMat/CardMat';
-import Score from '../Score/Score';
+// import Score from '../Score/Score';
 import {Location, Subway, SubwayName, Window, Card, CardType, NewDeck, Edge, MetroCity} from '../../common/AppData';
 import shuffle from '../../util/immutable-shuffle';
 import useMatchMediaQuery from '../../hooks/MatchMedia';
@@ -265,18 +265,18 @@ function App() {
     };
   })();
   
-  function isRouteComplete(subway:Subway):boolean {
-    return subway.route.every(station => [state.stations, state.transfers].some(set => set.has(station)));
-  }
+  // function isRouteComplete(subway:Subway):boolean {
+  //   return subway.route.every(station => [state.stations, state.transfers].some(set => set.has(station)));
+  // }
   
-  const scores = (function calculateScores() {
-    const completedSubways = state.subways.filter(isRouteComplete);
-    return {
-      completed: completedSubways.reduce((accum, subway) => accum + subway.routeCompletionBonus[0], 0),
-      transfers: 2 * state.transfers.reduce((accum, station) => accum + graphs.vertexSets.get(station, Immutable.Set()).size, 0),
-      empty: graphs.vertexSets.size - state.stations.size - state.transfers.size
-    };
-  })();
+  // const scores = (function calculateScores() {
+  //   const completedSubways = state.subways.filter(isRouteComplete);
+  //   return {
+  //     completed: completedSubways.reduce((accum, subway) => accum + subway.routeCompletionBonus[0], 0),
+  //     transfers: 2 * state.transfers.reduce((accum, station) => accum + graphs.vertexSets.get(station, Immutable.Set()).size, 0),
+  //     empty: graphs.vertexSets.size - state.stations.size - state.transfers.size
+  //   };
+  // })();
   
 
   const isLandscape = useMatchMediaQuery('only screen and (min-aspect-ratio: 2 / 1) and (max-height: 55rem)');
@@ -308,10 +308,10 @@ function App() {
         cardDrawDisabled={state.cardDrawDisabled}
         onDeckDraw={handleDeckDraw}
       />
-      <div>
+      {/* <div>
         <Score {...scores} />
         <button onClick={handleNewGame}>New Game</button>
-      </div>
+      </div> */}
   </div>;
 }
 
